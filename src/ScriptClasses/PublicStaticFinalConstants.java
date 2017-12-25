@@ -6,20 +6,29 @@ import java.awt.Point;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class ConstantsAndStatics {
+public class PublicStaticFinalConstants {
 
     public static final int RS_GAME_TICK_MS = 603;
     //items
-    public static final int ABSORPTION_POTION_ID = 11735;
-    public static final int OVERLOAD_ID = 11731;
-    public static final int DWARVEN_ROCK_CAKE_ID = 7509;
+    public static final int ABSORPTION_POTION_4_ID = 11734;
+    public static final int ABSORPTION_POTION_3_ID = 11735;
+    public static final int ABSORPTION_POTION_2_ID = 11736;
+    public static final int ABSORPTION_POTION_1_ID = 11737;
+    public static final int OVERLOAD_POTION_4_ID = 11730;
+    public static final int OVERLOAD_POTION_3_ID = 11731;
+    public static final int OVERLOAD_POTION_2_ID = 11732;
+    public static final int OVERLOAD_POTION_1_ID = 11733;
+    public static final int DWARVEN_ROCK_CAKE_ID = 7510;
     //npc
-    public static final int DOMINIC_ONION = 1120;
+    public static final int DOMINIC_ONION_ID = 1120;
+    //actions
+    public final static String DRINK = "Drink";
+    public final static String GUZZLE = "Guzzle";
 
 
     public static Script hostScriptReference;
 
-    private ConstantsAndStatics(){} //meant to be a constant provider, no constructor
+    private PublicStaticFinalConstants(){} //meant to be a constant provider, no constructor
 
     public static void setHostScriptReference(Script ref){
         hostScriptReference = ref;
