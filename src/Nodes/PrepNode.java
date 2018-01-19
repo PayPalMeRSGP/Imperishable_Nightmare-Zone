@@ -9,8 +9,6 @@ import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.input.mouse.InventorySlotDestination;
 import org.osbot.rs07.script.MethodProvider;
 
-import java.awt.*;
-
 public class PrepNode implements ExecutableNode, Comparable<ExecutableNode> {
     private final int BASE_STARTING_KEY = 1;
     private int currentKey = BASE_STARTING_KEY;
@@ -38,11 +36,11 @@ public class PrepNode implements ExecutableNode, Comparable<ExecutableNode> {
         PublicStaticFinalConstants.hostScriptReference.log("entering drinkAbsorptions");
         Inventory inv = PublicStaticFinalConstants.hostScriptReference.getInventory();
         int absorptionLvl = getAbsorptionLvl();
-        while(absorptionLvl <= 200 && doesPlayerHaveAbsorptionsLeft()){
+        while(absorptionLvl < 100 && doesPlayerHaveAbsorptionsLeft()){
             PublicStaticFinalConstants.hostScriptReference.log("absorptionLvl: " + absorptionLvl);
             inv.interact(PublicStaticFinalConstants.DRINK, PublicStaticFinalConstants.ABSORPTION_POTION_1_ID, PublicStaticFinalConstants.ABSORPTION_POTION_2_ID, PublicStaticFinalConstants.ABSORPTION_POTION_3_ID, PublicStaticFinalConstants.ABSORPTION_POTION_4_ID);
             absorptionLvl = getAbsorptionLvl();
-            MethodProvider.sleep(PublicStaticFinalConstants.randomNormalDist(PublicStaticFinalConstants.RS_GAME_TICK_MS, 60.0));
+            MethodProvider.sleep(PublicStaticFinalConstants.randomNormalDist(PublicStaticFinalConstants.RS_GAME_TICK_MS*3, 180));
         }
         PublicStaticFinalConstants.hostScriptReference.log("exiting drinkAbsorptions");
     }
@@ -57,7 +55,7 @@ public class PrepNode implements ExecutableNode, Comparable<ExecutableNode> {
         if(currentHealth >= 50 && doesPlayerHaveOverloadsLeft()){
             inv.interact(PublicStaticFinalConstants.DRINK, PublicStaticFinalConstants.OVERLOAD_POTION_1_ID, PublicStaticFinalConstants.OVERLOAD_POTION_2_ID,
                     PublicStaticFinalConstants.OVERLOAD_POTION_3_ID, PublicStaticFinalConstants.OVERLOAD_POTION_4_ID);
-            while(currentHealth > estimatedHealthAfterOverload){
+            while(currentHealth > estimatedHealthAfterOverload){ //wait out overload dmg, DO NOT GUZZLE while taking overload dmg, may result in overload dmg player killing player.
                 MethodProvider.sleep(500);
                 currentHealth = PublicStaticFinalConstants.hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
                 PublicStaticFinalConstants.hostScriptReference.log("waiting out overload dmg... current hp: " + currentHealth);

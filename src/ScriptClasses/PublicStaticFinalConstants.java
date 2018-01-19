@@ -1,5 +1,7 @@
 package ScriptClasses;
 
+import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.script.Script;
 
 import java.awt.Point;
@@ -18,12 +20,27 @@ public class PublicStaticFinalConstants {
     public static final int OVERLOAD_POTION_3_ID = 11731;
     public static final int OVERLOAD_POTION_2_ID = 11732;
     public static final int OVERLOAD_POTION_1_ID = 11733;
+    public static final int SUPER_RANGING_4_ID = 11722;
+    public static final int SUPER_RANGING_3_ID = 11723;
+    public static final int SUPER_RANGING_2_ID = 11724;
+    public static final int SUPER_RANGING_1_ID = 11725;
     public static final int DWARVEN_ROCK_CAKE_ID = 7510;
     //npc
     public static final int DOMINIC_ONION_ID = 1120;
     //actions
     public final static String DRINK = "Drink";
     public final static String GUZZLE = "Guzzle";
+    //area
+    public final static Area OUTSIDE_NMZ = new Area(2604, 3111, 2614, 3119);
+    //parameters from GUI
+    public static boolean usingOverload;
+    public static boolean usingSuperRanging;
+    public static boolean usingAbsorptions;
+    //for paint
+    public enum ScriptStatus {
+        AFKING, OVBRLOADING, ABSORPTIONS, GUZZLING_ROCKCAKES;
+    }
+    ScriptStatus currentScriptStatus;
 
 
     public static Script hostScriptReference;
@@ -45,5 +62,14 @@ public class PublicStaticFinalConstants {
         int randY = ThreadLocalRandom.current().nextInt(upperLeftBound.y, lowerRightBound.y);
         return !hostScriptReference.getMouse().move(randX, randY);
     }
+
+    public void setCurrentScriptStatus(ScriptStatus currentScriptStatus) {
+        this.currentScriptStatus = currentScriptStatus;
+    }
+
+    public String getCurrentScriptStatus() {
+        return currentScriptStatus.toString();
+    }
+
 
 }
