@@ -11,6 +11,7 @@ import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.api.ui.Tab;
 import org.osbot.rs07.listener.MessageListener;
 import org.osbot.rs07.script.MethodProvider;
+import org.osbot.rs07.utility.ConditionalSleep;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -39,9 +40,11 @@ public class AFKNode implements ExecutableNode, MessageListener, Comparable<Exec
     }
 
 
-    //AFK node does not toggle prayer
-    //This Node seeks to emulate a human player leaving his account afk in nmz thereby letting his hp regen up to a random amount (hpRegenLimit)
-    //then coming back and guzzling rockcakes back to 1 hp before afking again.
+    /*
+    AFK node does not toggle prayer
+    This Node seeks to emulate a human player leaving his account afk in nmz thereby letting his hp regen up to a random amount (hpRegenLimit)
+    then coming back and guzzling rockcakes back to 1 hp before afking again.
+    */
     @Override
     public int executeNodeAction() throws InterruptedException {
         if(isPlayerNotInNMZ()){
@@ -49,16 +52,52 @@ public class AFKNode implements ExecutableNode, MessageListener, Comparable<Exec
             MethodProvider.sleep(10000);
             PublicStaticFinalConstants.hostScriptReference.stop();
         }
-        handleAbsorptionLvl();
-        handlePotionsAndHP();
-        int sleepTime = (int) PublicStaticFinalConstants.randomNormalDist(15000, 3000);
-        PublicStaticFinalConstants.hostScriptReference.log("The next onLoop() call executes in " + sleepTime/1000 + " seconds");
-        return sleepTime;
+        //for 45s, check about every 1s whether absorptions, potions or hp need to handled
+        new ConditionalSleep(45000, 1000, 250) {
+            @Override
+            public boolean condition() throws InterruptedException {
+                PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.AFKING);
+                boolean absorptionHandled = handleAbsorptionLvl();
+                boolean hpHandled = handlePotionsAndHP();
+                PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.AFKING);
+                return absorptionHandled || hpHandled; //prevent short circuiting, both handleAbsorptionLvl() and handlePotionsAndHP() need to execute
+            }
+        }.sleep();
+        return 1000;
     }
 
-    private boolean isPlayerNotInNMZ(){
-        Position currentPos = PublicStaticFinalConstants.hostScriptReference.myPosition();
-        return PublicStaticFinalConstants.OUTSIDE_NMZ.contains(currentPos);
+    private boolean handleAbsorptionLvl() throws InterruptedException {
+        Inventory inv = PublicStaticFinalConstants.hostScriptReference.getInventory();
+        int absorptionLvl = getAbsorptionLvl();
+        if(absorptionLvl < 150){
+            PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.ABSORPTIONS);
+            while(absorptionLvl <= 150 && doesPlayerHaveAbsorptionsLeft()){
+                PublicStaticFinalConstants.hostScriptReference.log("absorptionLvl: " + absorptionLvl);
+                inv.interact(DRINK, PublicStaticFinalConstants.ABSORPTION_POTION_1_ID, PublicStaticFinalConstants.ABSORPTION_POTION_2_ID,
+                        PublicStaticFinalConstants.ABSORPTION_POTION_3_ID, PublicStaticFinalConstants.ABSORPTION_POTION_4_ID);
+                absorptionLvl = getAbsorptionLvl();
+                MethodProvider.sleep(PublicStaticFinalConstants.randomNormalDist(PublicStaticFinalConstants.RS_GAME_TICK_MS, 60.0));
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private boolean handlePotionsAndHP() throws InterruptedException {
+        openInventoryTab();
+        int currentHealth = PublicStaticFinalConstants.hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
+        if(currentHealth >= hpRegenLimit){
+            if(!drinkOverload()){
+                PublicStaticFinalConstants.hostScriptReference.log("Did not drink Overload");
+            }
+            guzzleRockCakeTo1();
+            PublicStaticFinalConstants.hostScriptReference.getMouse().moveOutsideScreen();
+            hpRegenLimit = ThreadLocalRandom.current().nextInt(2, 5); //generate next random hp limit
+            return true;
+        }
+        PublicStaticFinalConstants.hostScriptReference.getMouse().moveOutsideScreen();
+        return false;
+
     }
 
     private void togglePrayer() throws InterruptedException {
@@ -73,21 +112,6 @@ public class AFKNode implements ExecutableNode, MessageListener, Comparable<Exec
                 }
             }
         }
-    }
-
-    private void handlePotionsAndHP() throws InterruptedException {
-        openInventoryTab();
-        int currentHealth = PublicStaticFinalConstants.hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
-        if(currentHealth >= hpRegenLimit){
-            if(!drinkOverload()){
-                PublicStaticFinalConstants.hostScriptReference.log("Did not drink Overload");
-            }
-            guzzleRockCakeTo1();
-            PublicStaticFinalConstants.hostScriptReference.getMouse().moveOutsideScreen();
-            hpRegenLimit = ThreadLocalRandom.current().nextInt(2, 5); //generate next random hp limit
-
-        }
-
     }
 
     private boolean drinkSuperRangingPotion(){
@@ -106,14 +130,15 @@ public class AFKNode implements ExecutableNode, MessageListener, Comparable<Exec
         openInventoryTab();
         int currentHealth = PublicStaticFinalConstants.hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
         if(currentHealth > 50 && doesPlayerHaveOverloadsLeft() && doesPlayerHaveAbsorptionsLeft()){
+            PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.OVERLOADING);
             PublicStaticFinalConstants.hostScriptReference.log("We can drink overloads");
             int startingHealth = currentHealth;
             Inventory inv = PublicStaticFinalConstants.hostScriptReference.getInventory();
             boolean drankOverload = inv.interact(DRINK, PublicStaticFinalConstants.OVERLOAD_POTION_1_ID, PublicStaticFinalConstants.OVERLOAD_POTION_2_ID,
                     PublicStaticFinalConstants.OVERLOAD_POTION_3_ID, PublicStaticFinalConstants.OVERLOAD_POTION_4_ID);
 
-            while(currentHealth > startingHealth - 48 && drankOverload){
-                MethodProvider.sleep(100);
+            while(currentHealth > startingHealth - 49 && drankOverload){
+                MethodProvider.sleep(300);
                 currentHealth = PublicStaticFinalConstants.hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
             }
             return drankOverload;
@@ -121,16 +146,12 @@ public class AFKNode implements ExecutableNode, MessageListener, Comparable<Exec
         return false;
     }
 
-    private void openInventoryTab(){
-        Tabs tab = PublicStaticFinalConstants.hostScriptReference.getTabs();
-        if(tab.getOpen() != Tab.INVENTORY){
-            tab.open(Tab.INVENTORY);
-        }
-    }
+
 
     private void guzzleRockCakeTo1() throws InterruptedException {
         int currentHealth = PublicStaticFinalConstants.hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
         while(currentHealth > 1){
+            PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.GUZZLING_ROCKCAKES);
             Inventory inv = PublicStaticFinalConstants.hostScriptReference.getInventory();
             inv.interact(GUZZLE, PublicStaticFinalConstants.DWARVEN_ROCK_CAKE_ID);
             MethodProvider.sleep(PublicStaticFinalConstants.randomNormalDist(PublicStaticFinalConstants.RS_GAME_TICK_MS, 60.0));
@@ -138,20 +159,11 @@ public class AFKNode implements ExecutableNode, MessageListener, Comparable<Exec
         }
     }
 
-    private boolean handleAbsorptionLvl() throws InterruptedException {
-        Inventory inv = PublicStaticFinalConstants.hostScriptReference.getInventory();
-        int absorptionLvl = getAbsorptionLvl();
-        if(absorptionLvl < 150){
-            while(absorptionLvl <= 150 && doesPlayerHaveAbsorptionsLeft()){
-                PublicStaticFinalConstants.hostScriptReference.log("absorptionLvl: " + absorptionLvl);
-                inv.interact(DRINK, PublicStaticFinalConstants.ABSORPTION_POTION_1_ID, PublicStaticFinalConstants.ABSORPTION_POTION_2_ID,
-                        PublicStaticFinalConstants.ABSORPTION_POTION_3_ID, PublicStaticFinalConstants.ABSORPTION_POTION_4_ID);
-                absorptionLvl = getAbsorptionLvl();
-                MethodProvider.sleep(PublicStaticFinalConstants.randomNormalDist(PublicStaticFinalConstants.RS_GAME_TICK_MS, 60.0));
-            }
-            return true;
+    private void openInventoryTab(){
+        Tabs tab = PublicStaticFinalConstants.hostScriptReference.getTabs();
+        if(tab.getOpen() != Tab.INVENTORY){
+            tab.open(Tab.INVENTORY);
         }
-        return false;
     }
 
     private boolean doesPlayerHaveAbsorptionsLeft(){
@@ -177,6 +189,11 @@ public class AFKNode implements ExecutableNode, MessageListener, Comparable<Exec
         if(widget != null && widget.isVisible() && widget.getMessage() != null)
             return Integer.parseInt(widget.getMessage().replace(",", ""));
         return 0;
+    }
+
+    private boolean isPlayerNotInNMZ(){
+        Position currentPos = PublicStaticFinalConstants.hostScriptReference.myPosition();
+        return PublicStaticFinalConstants.OUTSIDE_NMZ.contains(currentPos);
     }
 
     @Override

@@ -38,9 +38,9 @@ public class PublicStaticFinalConstants {
     public static boolean usingAbsorptions;
     //for paint
     public enum ScriptStatus {
-        AFKING, OVBRLOADING, ABSORPTIONS, GUZZLING_ROCKCAKES;
+        PREPARING, AFKING, OVERLOADING, ABSORPTIONS, GUZZLING_ROCKCAKES;
     }
-    ScriptStatus currentScriptStatus;
+    public static ScriptStatus currentScriptStatus;
 
 
     public static Script hostScriptReference;
@@ -56,19 +56,21 @@ public class PublicStaticFinalConstants {
         return Math.abs(debug); //in case we get a negative number
     }
 
-
     private static boolean hoverOverArea(Point upperLeftBound, Point lowerRightBound, Script hostScriptReference){
         int randX = ThreadLocalRandom.current().nextInt(upperLeftBound.x, lowerRightBound.x);
         int randY = ThreadLocalRandom.current().nextInt(upperLeftBound.y, lowerRightBound.y);
         return !hostScriptReference.getMouse().move(randX, randY);
     }
 
-    public void setCurrentScriptStatus(ScriptStatus currentScriptStatus) {
-        this.currentScriptStatus = currentScriptStatus;
+    public static void setCurrentScriptStatus(ScriptStatus currentScriptStatus) {
+        PublicStaticFinalConstants.currentScriptStatus = currentScriptStatus;
     }
 
-    public String getCurrentScriptStatus() {
-        return currentScriptStatus.toString();
+    public static String getCurrentScriptStatus() {
+        if(currentScriptStatus != null){
+            return currentScriptStatus.toString();
+        }
+        return "NULL";
     }
 
 

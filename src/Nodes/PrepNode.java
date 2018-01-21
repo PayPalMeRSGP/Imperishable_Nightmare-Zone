@@ -6,6 +6,7 @@ import org.osbot.rs07.api.Menu;
 import org.osbot.rs07.api.Mouse;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Skill;
+import org.osbot.rs07.api.ui.Tab;
 import org.osbot.rs07.input.mouse.InventorySlotDestination;
 import org.osbot.rs07.script.MethodProvider;
 
@@ -27,8 +28,10 @@ public class PrepNode implements ExecutableNode, Comparable<ExecutableNode> {
 
     @Override
     public int executeNodeAction() throws InterruptedException {
+        PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.PREPARING);
         drinkAbsorptions();
         setPlayerHealthTo1();
+        turnOnAutoRetaliate();
         return 1000;
     }
 
@@ -44,8 +47,6 @@ public class PrepNode implements ExecutableNode, Comparable<ExecutableNode> {
         }
         PublicStaticFinalConstants.hostScriptReference.log("exiting drinkAbsorptions");
     }
-
-
 
     private void setPlayerHealthTo1() throws InterruptedException {
         PublicStaticFinalConstants.hostScriptReference.log("entering setPlayerHealthTo1");
@@ -68,6 +69,12 @@ public class PrepNode implements ExecutableNode, Comparable<ExecutableNode> {
             MethodProvider.sleep(PublicStaticFinalConstants.randomNormalDist(PublicStaticFinalConstants.RS_GAME_TICK_MS, 60.0));
         }
         PublicStaticFinalConstants.hostScriptReference.log("exiting setPlayerHealthTo1");
+    }
+
+    private void turnOnAutoRetaliate(){
+        PublicStaticFinalConstants.hostScriptReference.getTabs().open(Tab.ATTACK);
+        PublicStaticFinalConstants.hostScriptReference.getCombat().toggleAutoRetaliate(true);
+        PublicStaticFinalConstants.hostScriptReference.getTabs().open(Tab.INVENTORY);
     }
 
     private void guzzleRockCake(){
