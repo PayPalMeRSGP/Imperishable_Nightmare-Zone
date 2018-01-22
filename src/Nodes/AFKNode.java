@@ -56,13 +56,13 @@ public class AFKNode implements ExecutableNode, MessageListener, Comparable<Exec
         new ConditionalSleep(45000, 1000, 250) {
             @Override
             public boolean condition() throws InterruptedException {
-                PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.AFKING);
+                PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.AFKING); //set script status for paint
                 boolean absorptionHandled = handleAbsorptionLvl();
                 boolean hpHandled = handlePotionsAndHP();
-                PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.AFKING);
                 return absorptionHandled || hpHandled; //prevent short circuiting, both handleAbsorptionLvl() and handlePotionsAndHP() need to execute
             }
         }.sleep();
+        PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.AFKING);
         return 1000;
     }
 
@@ -72,7 +72,6 @@ public class AFKNode implements ExecutableNode, MessageListener, Comparable<Exec
         if(absorptionLvl < 150){
             PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.ABSORPTIONS);
             while(absorptionLvl <= 150 && doesPlayerHaveAbsorptionsLeft()){
-                PublicStaticFinalConstants.hostScriptReference.log("absorptionLvl: " + absorptionLvl);
                 inv.interact(DRINK, PublicStaticFinalConstants.ABSORPTION_POTION_1_ID, PublicStaticFinalConstants.ABSORPTION_POTION_2_ID,
                         PublicStaticFinalConstants.ABSORPTION_POTION_3_ID, PublicStaticFinalConstants.ABSORPTION_POTION_4_ID);
                 absorptionLvl = getAbsorptionLvl();
@@ -186,8 +185,12 @@ public class AFKNode implements ExecutableNode, MessageListener, Comparable<Exec
 
     private int getAbsorptionLvl() {
         RS2Widget widget = PublicStaticFinalConstants.hostScriptReference.getWidgets().get(202, 1, 9);
-        if(widget != null && widget.isVisible() && widget.getMessage() != null)
+        if(widget != null && widget.isVisible() && widget.getMessage() != null) {
+            int absorptionLvl = Integer.parseInt(widget.getMessage().replace(",", ""));
+            PublicStaticFinalConstants.hostScriptReference.log("absorption: " + absorptionLvl);
             return Integer.parseInt(widget.getMessage().replace(",", ""));
+        }
+
         return 0;
     }
 

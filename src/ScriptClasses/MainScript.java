@@ -1,9 +1,5 @@
 package ScriptClasses;
 
-import Nodes.AFKNode;
-import org.osbot.rs07.api.Mouse;
-import org.osbot.rs07.api.map.Area;
-import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
@@ -12,12 +8,14 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import ScriptClasses.PublicStaticFinalConstants.MeleeCombatStyle;
 
-@ScriptManifest(author = "PayPalMeRSGP", name = "NMZ_debug2", info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
+@ScriptManifest(author = "PayPalMeRSGP", name = "NMZ_debug_absorption0", info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MouseListener, MouseMotionListener {
 
     private PriorityQueueWrapper pqw;
     private long startTime;
+    private MeleeCombatStyle style;
 
     //for draggable paint
     private int xOffset = 0;
@@ -38,11 +36,14 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
 
         startTime = System.currentTimeMillis();
         getExperienceTracker().start(Skill.HITPOINTS);
+        getExperienceTracker().start(Skill.ATTACK);
         getExperienceTracker().start(Skill.STRENGTH);
+        getExperienceTracker().start(Skill.DEFENCE);
     }
 
     @Override
     public int onLoop() throws InterruptedException {
+        determineMeleeStyle();
         return this.pqw.executeTopNode();
     }
 
@@ -50,14 +51,13 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
     public void onPaint(Graphics2D g) {
         super.onPaint(g);
         long runTime = System.currentTimeMillis() - startTime;
-        int strXpGained = this.getExperienceTracker().getGainedXP(Skill.STRENGTH);
-        int strXPH = this.getExperienceTracker().getGainedXPPerHour(Skill.STRENGTH);
-        long strTTL = this.getExperienceTracker().getTimeToLevel(Skill.STRENGTH);
-        int strLvl = this.getSkills().getStatic(Skill.STRENGTH);
-        int hpXpGained = this.getExperienceTracker().getGainedXP(Skill.HITPOINTS);
-        int hpXPH = this.getExperienceTracker().getGainedXPPerHour(Skill.HITPOINTS);
-        long hpTTL = this.getExperienceTracker().getTimeToLevel(Skill.HITPOINTS);
-        int hpLvl = this.getSkills().getStatic(Skill.HITPOINTS);
+
+        PaintXPInfo info = PaintXPInfo.getSingleton(style, this);
+
+        int hpXpGained = info.getHpXpGained();
+        int hpXPH = info.getHpXPH();
+        long hpTTL = info.getHpTTL();
+        int hpLvl = info.getHpLvl();
 
         Point pos = getMouse().getPosition();
         g.drawLine(0, pos.y, 800, pos.y); //horiz line
@@ -66,10 +66,38 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
         g.setColor(new Color(156,156,156));
         g.fillRect(paintArea.x, paintArea.y, paintArea.width, paintArea.height);
         g.setColor(new Color(255, 255, 255));
-        g.drawString("Str LVL: " + formatValue(strLvl) + " XP: " + formatValue(strXpGained) + " TTL: " + formatTime(strTTL) + " XPH: " + formatValue(strXPH), paintArea.x + 10, paintArea.y + 15);
-        g.drawString("HP LVL: " + formatValue(hpLvl) + " XP: " + formatValue(hpXpGained) + " TTL: " + formatTime(hpTTL) + " XPH: " + formatValue(hpXPH), paintArea.x + 10, paintArea.y + 30);
-        g.drawString("runtime: " + formatTime(runTime), paintArea.x + 10, paintArea.y + 45);
-        g.drawString("status: " + PublicStaticFinalConstants.getCurrentScriptStatus(), paintArea.x + 10, paintArea.y + 60);
+
+        if(style == MeleeCombatStyle.CTRL){
+            paintArea.setBounds(paintRectangleTopLeftX, paintRectangleTopLeftY, 300, 100);
+            g.drawString("ATK" + " LVL: " + formatValue(info.getAtkLvl()) + " XP: " + formatValue(info.getMeleeXpGained()) + " TTL: " + formatTime(info.getAtkTTL()) + " XPH: " + formatValue(info.getMeleeXPH()), paintArea.x + 10, paintArea.y + 15);
+            g.drawString("STR" + " LVL: " + formatValue(info.getStrLvl()) + " XP: " + formatValue(info.getMeleeXpGained()) + " TTL: " + formatTime(info.getStrTTL()) + " XPH: " + formatValue(info.getMeleeXPH()), paintArea.x + 10, paintArea.y + 30);
+            g.drawString("DEF" + " LVL: " + formatValue(info.getDefLvl()) + " XP: " + formatValue(info.getMeleeXpGained()) + " TTL: " + formatTime(info.getDefTTL()) + " XPH: " + formatValue(info.getMeleeXPH()), paintArea.x + 10, paintArea.y + 45);
+            g.drawString("HP LVL: " + formatValue(hpLvl) + " XP: " + formatValue(hpXpGained) + " TTL: " + formatTime(hpTTL) + " XPH: " + formatValue(hpXPH), paintArea.x + 10, paintArea.y + 60);
+            g.drawString("runtime: " + formatTime(runTime), paintArea.x + 10, paintArea.y + 75);
+            g.drawString("status: " + PublicStaticFinalConstants.getCurrentScriptStatus(), paintArea.x + 10, paintArea.y + 90);
+        }
+        else{
+            g.drawString(style.toString() + " LVL: " + formatValue(info.getMeleeLvl()) + " XP: " + formatValue(info.getMeleeXpGained()) + " TTL: " + formatTime(info.getMeleeTTL()) + " XPH: " + formatValue(info.getMeleeXPH()), paintArea.x + 10, paintArea.y + 15);
+            g.drawString("HP LVL: " + formatValue(hpLvl) + " XP: " + formatValue(hpXpGained) + " TTL: " + formatTime(hpTTL) + " XPH: " + formatValue(hpXPH), paintArea.x + 10, paintArea.y + 30);
+            g.drawString("runtime: " + formatTime(runTime), paintArea.x + 10, paintArea.y + 45);
+            g.drawString("status: " + PublicStaticFinalConstants.getCurrentScriptStatus(), paintArea.x + 10, paintArea.y + 60);
+
+        }
+
+    }
+
+    private void determineMeleeStyle(){
+        int s = this.getConfigs().get(43);
+        switch (s){
+            case 0:
+                style = MeleeCombatStyle.ATK;
+            case 1:
+                style = MeleeCombatStyle.STR;
+            case 2:
+                style = MeleeCombatStyle.CTRL;
+            case 3:
+                style = MeleeCombatStyle.DEF;
+        }
     }
 
     private String formatTime(final long ms){
@@ -130,4 +158,6 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
     public void mouseMoved(MouseEvent e) {
         //not used
     }
+
+
 }

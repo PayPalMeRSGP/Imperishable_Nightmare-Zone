@@ -40,8 +40,11 @@ public class PublicStaticFinalConstants {
     public enum ScriptStatus {
         PREPARING, AFKING, OVERLOADING, ABSORPTIONS, GUZZLING_ROCKCAKES;
     }
-    public static ScriptStatus currentScriptStatus;
+    public enum MeleeCombatStyle {
+        ATK, STR, DEF, CTRL;
+    }
 
+    public static ScriptStatus currentScriptStatus;
 
     public static Script hostScriptReference;
 
