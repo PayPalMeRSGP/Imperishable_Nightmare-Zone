@@ -3,12 +3,10 @@ package Nodes;
 import ScriptClasses.PublicStaticFinalConstants;
 import org.osbot.rs07.Bot;
 import org.osbot.rs07.api.Inventory;
+import org.osbot.rs07.api.Prayer;
 import org.osbot.rs07.api.Tabs;
 import org.osbot.rs07.api.map.Position;
-import org.osbot.rs07.api.ui.Message;
-import org.osbot.rs07.api.ui.RS2Widget;
-import org.osbot.rs07.api.ui.Skill;
-import org.osbot.rs07.api.ui.Tab;
+import org.osbot.rs07.api.ui.*;
 import org.osbot.rs07.listener.MessageListener;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.utility.ConditionalSleep;
@@ -23,7 +21,9 @@ public class AFKNode implements ExecutableNode, MessageListener, Comparable<Exec
 
     private static AFKNode AFKNodeSingleton;
 
-    private int hpRegenLimit; //determines when to guzzle back to 1
+    //below variables are randomly generated
+    private int hpRegenLimit; //determines what hp level to regen to before guzzling back to 1
+    private int absorptionMinLimit; //determines when to repot absorptions
     private int potionMinBoost; //if using super ranging, determines when to re-pot
 
     private AFKNode(){}
@@ -33,8 +33,10 @@ public class AFKNode implements ExecutableNode, MessageListener, Comparable<Exec
             AFKNodeSingleton = new AFKNode();
             Bot bot = PublicStaticFinalConstants.hostScriptReference.getBot();
             bot.addMessageListener(AFKNodeSingleton);
-            AFKNodeSingleton.hpRegenLimit = ThreadLocalRandom.current().nextInt(2, 6); //generate initial random hp limit, this variable is used by handlePotionsAndHP() to determine when to reguzzle back to 1 hp
-            AFKNodeSingleton.potionMinBoost = ThreadLocalRandom.current().nextInt(3, 7); //generate potion min boost, used to determine next re-pot
+            AFKNodeSingleton.hpRegenLimit = ThreadLocalRandom.current().nextInt(2, 6);
+            AFKNodeSingleton.absorptionMinLimit = ThreadLocalRandom.current().nextInt(100, 250);
+            AFKNodeSingleton.potionMinBoost = ThreadLocalRandom.current().nextInt(3, 7);
+
         }
         return AFKNodeSingleton;
     }
@@ -69,14 +71,15 @@ public class AFKNode implements ExecutableNode, MessageListener, Comparable<Exec
     private boolean handleAbsorptionLvl() throws InterruptedException {
         Inventory inv = PublicStaticFinalConstants.hostScriptReference.getInventory();
         int absorptionLvl = getAbsorptionLvl();
-        if(absorptionLvl < 150){
+        if(absorptionLvl < absorptionMinLimit){
             PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.ABSORPTIONS);
-            while(absorptionLvl <= 150 && doesPlayerHaveAbsorptionsLeft()){
+            while(absorptionLvl <= 250 && doesPlayerHaveAbsorptionsLeft()){
                 inv.interact(DRINK, PublicStaticFinalConstants.ABSORPTION_POTION_1_ID, PublicStaticFinalConstants.ABSORPTION_POTION_2_ID,
                         PublicStaticFinalConstants.ABSORPTION_POTION_3_ID, PublicStaticFinalConstants.ABSORPTION_POTION_4_ID);
                 absorptionLvl = getAbsorptionLvl();
                 MethodProvider.sleep(PublicStaticFinalConstants.randomNormalDist(PublicStaticFinalConstants.RS_GAME_TICK_MS, 60.0));
             }
+            AFKNodeSingleton.absorptionMinLimit = ThreadLocalRandom.current().nextInt(100, 250);
             return true;
         }
         return false;
@@ -86,9 +89,7 @@ public class AFKNode implements ExecutableNode, MessageListener, Comparable<Exec
         openInventoryTab();
         int currentHealth = PublicStaticFinalConstants.hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
         if(currentHealth >= hpRegenLimit){
-            if(!drinkOverload()){
-                PublicStaticFinalConstants.hostScriptReference.log("Did not drink Overload");
-            }
+            drinkOverload();
             guzzleRockCakeTo1();
             PublicStaticFinalConstants.hostScriptReference.getMouse().moveOutsideScreen();
             hpRegenLimit = ThreadLocalRandom.current().nextInt(2, 5); //generate next random hp limit
@@ -118,6 +119,7 @@ public class AFKNode implements ExecutableNode, MessageListener, Comparable<Exec
         int currentRangeBoost = PublicStaticFinalConstants.hostScriptReference.getSkills().getDynamic(Skill.RANGED) - PublicStaticFinalConstants.hostScriptReference.getSkills().getStatic(Skill.RANGED);
         if(doesPlayerHaveSuperRangePotsLeft() && currentRangeBoost < potionMinBoost){
             Inventory inv = PublicStaticFinalConstants.hostScriptReference.getInventory();
+            AFKNodeSingleton.potionMinBoost = ThreadLocalRandom.current().nextInt(3, 7);
             return inv.interact(PublicStaticFinalConstants.DRINK, PublicStaticFinalConstants.SUPER_RANGING_4_ID, PublicStaticFinalConstants.SUPER_RANGING_3_ID,
                     PublicStaticFinalConstants.SUPER_RANGING_2_ID, PublicStaticFinalConstants.SUPER_RANGING_1_ID);
         }
@@ -136,14 +138,19 @@ public class AFKNode implements ExecutableNode, MessageListener, Comparable<Exec
             boolean drankOverload = inv.interact(DRINK, PublicStaticFinalConstants.OVERLOAD_POTION_1_ID, PublicStaticFinalConstants.OVERLOAD_POTION_2_ID,
                     PublicStaticFinalConstants.OVERLOAD_POTION_3_ID, PublicStaticFinalConstants.OVERLOAD_POTION_4_ID);
 
+            Prayer prayer = PublicStaticFinalConstants.hostScriptReference.getPrayer();
+            prayer.open();
+            prayer.set(PrayerButton.PROTECT_FROM_MELEE, true); //while hp is being depleted from overload it is possible to lose alot of absorptions
             while(currentHealth > startingHealth - 49 && drankOverload){
                 MethodProvider.sleep(300);
                 currentHealth = PublicStaticFinalConstants.hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
             }
+            prayer.set(PrayerButton.PROTECT_FROM_MELEE, false);
             return drankOverload;
         }
         return false;
     }
+
 
 
 

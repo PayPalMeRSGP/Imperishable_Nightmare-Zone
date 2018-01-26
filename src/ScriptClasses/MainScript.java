@@ -10,7 +10,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import ScriptClasses.PublicStaticFinalConstants.MeleeCombatStyle;
 
-@ScriptManifest(author = "PayPalMeRSGP", name = "NMZ_debug_absorption0", info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
+@ScriptManifest(author = "PayPalMeRSGP", name = "combat_style_debug1", info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MouseListener, MouseMotionListener {
 
     private PriorityQueueWrapper pqw;
@@ -91,13 +91,18 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
         switch (s){
             case 0:
                 style = MeleeCombatStyle.ATK;
+                break;
             case 1:
                 style = MeleeCombatStyle.STR;
+                break;
             case 2:
                 style = MeleeCombatStyle.CTRL;
+                break;
             case 3:
                 style = MeleeCombatStyle.DEF;
+                break;
         }
+        log("Combat Style:" + style.toString());
     }
 
     private String formatTime(final long ms){
