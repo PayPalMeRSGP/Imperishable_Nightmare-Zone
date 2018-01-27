@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.ThreadLocalRandom;
 
-//import Nodes.TestNode;
-
 public class GraphBasedNodeExecutor {
     private class NodeEdge {
         ExecutableNode u; //source node
@@ -93,31 +91,4 @@ public class GraphBasedNodeExecutor {
         }
 
     }
-
-
-    //testing
-    /*public static void main(String[] args){
-        TestNode node1 = new TestNode();
-        TestNode node2 = new TestNode();
-        TestNode node3 = new TestNode();
-        TestNode node4 = new TestNode();
-
-        GraphBasedNodeExecutor nodeExecutor = new GraphBasedNodeExecutor(node1);
-        nodeExecutor.addEdgeToNode(node1, node2, 1);
-        nodeExecutor.addEdgeToNode(node1, node3, 3);
-        nodeExecutor.addEdgeToNode(node3, node1, 1);
-        nodeExecutor.addEdgeToNode(node2, node1, 1);
-
-
-        try {
-            for(int i = 0; i < 100; i++){
-                nodeExecutor.executeNodeThenTraverse();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-    }*/
-
-
 }

@@ -18,7 +18,7 @@ public class AFKNode implements ExecutableNode, MessageListener {
     private final static String GUZZLE = "Guzzle";
     private Script hostScriptReference;
     private int hpRegenLimit; //determines when to guzzle back to 1
-    private int absorptionMinLimit; //determines when to repot absorptions
+    private int absorptionMinLimit; //determines when to re-pot absorptions
     private int potionMinBoost; //if using super ranging, determines when to re-pot
 
     private boolean drinkOverload;

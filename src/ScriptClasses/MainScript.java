@@ -1,5 +1,7 @@
 package ScriptClasses;
 
+import Nodes.AFKNode;
+import Nodes.PrepNode;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
@@ -10,13 +12,12 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import ScriptClasses.PublicStaticFinalConstants.MeleeCombatStyle;
 
-@ScriptManifest(author = "PayPalMeRSGP", name = "combat_style_debug1", info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
+@ScriptManifest(author = "PayPalMeRSGP", name = "combat_style_debug2", info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MouseListener, MouseMotionListener {
 
-    private PriorityQueueWrapper pqw;
     private long startTime;
     private MeleeCombatStyle style;
-
+    private GraphBasedNodeExecutor executor;
     //for draggable paint
     private int xOffset = 0;
     private int yOffset = 0;
@@ -28,23 +29,13 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
     @Override
     public void onStart() throws InterruptedException {
         super.onStart();
-        this.bot.addMouseListener(this);
-        this.bot.getCanvas().addMouseMotionListener(this);
-        getBot().addPainter(MainScript.this);
-        PublicStaticFinalConstants.setHostScriptReference(this);
-        this.pqw = new PriorityQueueWrapper();
-
-        startTime = System.currentTimeMillis();
-        getExperienceTracker().start(Skill.HITPOINTS);
-        getExperienceTracker().start(Skill.ATTACK);
-        getExperienceTracker().start(Skill.STRENGTH);
-        getExperienceTracker().start(Skill.DEFENCE);
+        setUp();
     }
 
     @Override
     public int onLoop() throws InterruptedException {
         determineMeleeStyle();
-        return this.pqw.executeTopNode();
+        return executor.executeNodeThenTraverse();
     }
 
     @Override
@@ -81,9 +72,27 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
             g.drawString("HP LVL: " + formatValue(hpLvl) + " XP: " + formatValue(hpXpGained) + " TTL: " + formatTime(hpTTL) + " XPH: " + formatValue(hpXPH), paintArea.x + 10, paintArea.y + 30);
             g.drawString("runtime: " + formatTime(runTime), paintArea.x + 10, paintArea.y + 45);
             g.drawString("status: " + PublicStaticFinalConstants.getCurrentScriptStatus(), paintArea.x + 10, paintArea.y + 60);
-
         }
+    }
 
+    private void setUp(){
+        this.bot.addMouseListener(this);
+        this.bot.getCanvas().addMouseMotionListener(this);
+        getBot().addPainter(MainScript.this);
+        PublicStaticFinalConstants.setHostScriptReference(this);
+
+        PrepNode prepNode = new PrepNode(this);
+        AFKNode afkNode = new AFKNode(this);
+
+        executor = new GraphBasedNodeExecutor(prepNode);
+        executor.addEdgeToNode(prepNode, afkNode, 1);
+        executor.addEdgeToNode(afkNode, afkNode, 1);
+
+        startTime = System.currentTimeMillis();
+        getExperienceTracker().start(Skill.HITPOINTS);
+        getExperienceTracker().start(Skill.ATTACK);
+        getExperienceTracker().start(Skill.STRENGTH);
+        getExperienceTracker().start(Skill.DEFENCE);
     }
 
     private void determineMeleeStyle(){

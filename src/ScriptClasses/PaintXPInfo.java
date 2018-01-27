@@ -35,18 +35,22 @@ public class PaintXPInfo {
         if(singleton == null){
             singleton = new PaintXPInfo();
         }
+
         if(style != null){
+            hostScriptReference.log("PaintXPINFO: " + style);
             switch (style){
                 case ATK:
-                    singleton.meleeLvl = hostScriptReference.getSkills().getStatic(Skill.ATTACK);
+                    singleton.atkLvl = hostScriptReference.getSkills().getStatic(Skill.ATTACK);
                     singleton.meleeXpGained = hostScriptReference.getExperienceTracker().getGainedXP(Skill.ATTACK);
                     singleton.meleeTTL = hostScriptReference.getExperienceTracker().getTimeToLevel(Skill.ATTACK);
                     singleton.meleeXPH = hostScriptReference.getExperienceTracker().getGainedXPPerHour(Skill.ATTACK);
+                    break;
                 case STR:
                     singleton.strLvl = hostScriptReference.getSkills().getStatic(Skill.STRENGTH);
                     singleton.meleeXpGained = hostScriptReference.getExperienceTracker().getGainedXP(Skill.STRENGTH);
                     singleton.meleeTTL = hostScriptReference.getExperienceTracker().getTimeToLevel(Skill.STRENGTH);
                     singleton.meleeXPH = hostScriptReference.getExperienceTracker().getGainedXPPerHour(Skill.STRENGTH);
+                    break;
                 case CTRL:
                     singleton.atkLvl = hostScriptReference.getSkills().getStatic(Skill.ATTACK);
                     singleton.strLvl = hostScriptReference.getSkills().getStatic(Skill.STRENGTH);
@@ -56,11 +60,13 @@ public class PaintXPInfo {
                     singleton.strTTL = hostScriptReference.getExperienceTracker().getTimeToLevel(Skill.STRENGTH);
                     singleton.defTTL = hostScriptReference.getExperienceTracker().getTimeToLevel(Skill.DEFENCE);
                     singleton.meleeXPH = hostScriptReference.getExperienceTracker().getGainedXPPerHour(Skill.ATTACK);
+                    break;
                 case DEF:
                     singleton.meleeLvl = hostScriptReference.getSkills().getStatic(Skill.DEFENCE);
                     singleton.meleeXpGained = hostScriptReference.getExperienceTracker().getGainedXP(Skill.DEFENCE);
                     singleton.meleeTTL = hostScriptReference.getExperienceTracker().getTimeToLevel(Skill.DEFENCE);
                     singleton.meleeXPH = hostScriptReference.getExperienceTracker().getGainedXPPerHour(Skill.DEFENCE);
+                    break;
             }
             singleton.hpXpGained = hostScriptReference.getExperienceTracker().getGainedXP(Skill.HITPOINTS);
             singleton.hpXPH = hostScriptReference.getExperienceTracker().getGainedXPPerHour(Skill.HITPOINTS);
