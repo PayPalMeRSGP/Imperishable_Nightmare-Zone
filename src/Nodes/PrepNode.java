@@ -10,12 +10,24 @@ import org.osbot.rs07.api.ui.Tab;
 import org.osbot.rs07.input.mouse.InventorySlotDestination;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
+import org.osbot.rs07.utility.ConditionalSleep;
+
+import java.util.Arrays;
 
 public class PrepNode implements ExecutableNode{
     private Script hostScriptReference;
 
-    public PrepNode(Script hostScriptReference) {
+    private static ExecutableNode singleton = null;
+
+    private PrepNode(Script hostScriptReference) {
         this.hostScriptReference = hostScriptReference;
+    }
+
+    public static ExecutableNode getSingleton(Script hostScriptReference) {
+        if(singleton == null){
+            singleton = new PrepNode(hostScriptReference);
+        }
+        return singleton;
     }
 
     @Override
@@ -48,11 +60,17 @@ public class PrepNode implements ExecutableNode{
         if(currentHealth > 50 && doesPlayerHaveOverloadsLeft()){
             inv.interact(PublicStaticFinalConstants.DRINK, PublicStaticFinalConstants.OVERLOAD_POTION_1_ID, PublicStaticFinalConstants.OVERLOAD_POTION_2_ID,
                     PublicStaticFinalConstants.OVERLOAD_POTION_3_ID, PublicStaticFinalConstants.OVERLOAD_POTION_4_ID);
-            while(currentHealth > estimatedHealthAfterOverload){ //wait out overload dmg, DO NOT GUZZLE while taking overload dmg, may result in overload dmg player killing player.
-                MethodProvider.sleep(500);
-                currentHealth = PublicStaticFinalConstants.hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
-                PublicStaticFinalConstants.hostScriptReference.log("waiting out overload dmg... current hp: " + currentHealth);
-            }
+
+            final int[] condSleepCountCheck = {0};
+            new ConditionalSleep(7000, 500){ //wait out overload dmg, DO NOT GUZZLE while taking overload dmg, may result in overload dmg player killing player.
+                @Override
+                public boolean condition() throws InterruptedException {
+                    condSleepCountCheck[0]++;
+                    hostScriptReference.log("in conditional sleep, count: " + Arrays.toString(condSleepCountCheck));
+                    int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
+                    return estimatedHealthAfterOverload > currentHealth;
+                }
+            }.sleep();
         }
         while(currentHealth > 1){
             guzzleRockCake();

@@ -37,16 +37,15 @@ public class PaintXPInfo {
         }
 
         if(style != null){
-            hostScriptReference.log("PaintXPINFO: " + style);
             switch (style){
                 case ATK:
-                    singleton.atkLvl = hostScriptReference.getSkills().getStatic(Skill.ATTACK);
+                    singleton.meleeLvl = hostScriptReference.getSkills().getStatic(Skill.ATTACK);
                     singleton.meleeXpGained = hostScriptReference.getExperienceTracker().getGainedXP(Skill.ATTACK);
                     singleton.meleeTTL = hostScriptReference.getExperienceTracker().getTimeToLevel(Skill.ATTACK);
                     singleton.meleeXPH = hostScriptReference.getExperienceTracker().getGainedXPPerHour(Skill.ATTACK);
                     break;
                 case STR:
-                    singleton.strLvl = hostScriptReference.getSkills().getStatic(Skill.STRENGTH);
+                    singleton.meleeLvl = hostScriptReference.getSkills().getStatic(Skill.STRENGTH);
                     singleton.meleeXpGained = hostScriptReference.getExperienceTracker().getGainedXP(Skill.STRENGTH);
                     singleton.meleeTTL = hostScriptReference.getExperienceTracker().getTimeToLevel(Skill.STRENGTH);
                     singleton.meleeXPH = hostScriptReference.getExperienceTracker().getGainedXPPerHour(Skill.STRENGTH);
