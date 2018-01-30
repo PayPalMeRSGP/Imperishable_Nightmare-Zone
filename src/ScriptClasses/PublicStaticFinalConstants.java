@@ -10,6 +10,10 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class PublicStaticFinalConstants {
 
+    public final static String OVERLOAD_DEPLETED_MSG = "The effects of overload have worn off";
+    public final static String DREAM_OVER_MSG = "You wake up feeling refreshed";
+
+
     public static final int RS_GAME_TICK_MS = 603;
     //items
     public static final int ABSORPTION_POTION_4_ID = 11734;
@@ -38,7 +42,7 @@ public class PublicStaticFinalConstants {
     public static boolean usingAbsorptions;
     //for paint
     public enum ScriptStatus {
-        PREPARING, AFKING, OVERLOADING, ABSORPTIONS, GUZZLING_ROCKCAKES;
+        PREPARING, AFKING, OVERLOADING, ABSORPTIONS, GUZZLING_ROCKCAKES, PRAYER_FLICK;
     }
     public enum MeleeCombatStyle {
         ATK, STR, DEF, CTRL;

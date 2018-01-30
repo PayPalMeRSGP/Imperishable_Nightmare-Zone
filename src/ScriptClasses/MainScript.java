@@ -1,8 +1,13 @@
 package ScriptClasses;
 
 import Nodes.AFKNode;
+import Nodes.ActiveNode;
 import Nodes.PrepNode;
+import org.osbot.AF;
+import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.api.ui.Skill;
+import org.osbot.rs07.listener.MessageListener;
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
@@ -12,8 +17,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import ScriptClasses.PublicStaticFinalConstants.MeleeCombatStyle;
 
-@ScriptManifest(author = "PayPalMeRSGP", name = "combat_style_debug2", info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
-public class MainScript extends Script implements MouseListener, MouseMotionListener {
+@ScriptManifest(author = "PayPalMeRSGP", name = "PrayerFlickTest1", info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
+public class MainScript extends Script implements MouseListener, MouseMotionListener, MessageListener {
 
     private long startTime;
     private MeleeCombatStyle style;
@@ -21,7 +26,7 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
     //for draggable paint
     private int xOffset = 0;
     private int yOffset = 0;
-    private int paintRectangleTopLeftX = 315;
+    private int paintRectangleTopLeftX = 0;
     private int paintRectangleTopLeftY = 0;
     private Rectangle paintArea = new Rectangle(paintRectangleTopLeftX, paintRectangleTopLeftY, 300, 75);
     private boolean movingPaint = false;
@@ -29,6 +34,7 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
     @Override
     public void onStart() throws InterruptedException {
         super.onStart();
+        getBot().addMessageListener(this);
         setUp();
     }
 
@@ -81,12 +87,16 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
         getBot().addPainter(MainScript.this);
         PublicStaticFinalConstants.setHostScriptReference(this);
 
-        PrepNode prepNode = new PrepNode(this);
-        AFKNode afkNode = new AFKNode(this);
+        PrepNode prepNode = (PrepNode) PrepNode.getSingleton(this);
+        AFKNode afkNode = (AFKNode) AFKNode.getSingleton(this);
+        ActiveNode activeNode = (ActiveNode) ActiveNode.getSingleton(this);
 
         executor = new GraphBasedNodeExecutor(prepNode);
-        executor.addEdgeToNode(prepNode, afkNode, 1);
-        executor.addEdgeToNode(afkNode, afkNode, 1);
+        /*executor.addEdgeToNode(prepNode, afkNode, 1);
+        executor.addEdgeToNode(afkNode, afkNode, 1);*/
+        executor.addEdgeToNode(prepNode, activeNode, 1);
+        executor.addEdgeToNode(activeNode, activeNode, 1);
+
 
         startTime = System.currentTimeMillis();
         getExperienceTracker().start(Skill.HITPOINTS);
@@ -111,7 +121,7 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
                 style = MeleeCombatStyle.DEF;
                 break;
         }
-        log("Combat Style:" + style.toString());
+
     }
 
     private String formatTime(final long ms){
@@ -171,6 +181,29 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
     @Override
     public void mouseMoved(MouseEvent e) {
         //not used
+    }
+
+    @Override
+    public void onMessage(Message message) throws InterruptedException {
+        PublicStaticFinalConstants.hostScriptReference.log(message.getMessage());
+        if(message.getType() == Message.MessageType.GAME){
+            if(message.getMessage().contains(PublicStaticFinalConstants.OVERLOAD_DEPLETED_MSG)){
+                PublicStaticFinalConstants.hostScriptReference.log("recieved overload worn off msg");
+                AFKNode afkNode = (AFKNode) AFKNode.getSingleton(this);
+                ActiveNode activeNode = (ActiveNode) ActiveNode.getSingleton(this);
+                afkNode.setDoOverload(true);
+                activeNode.setDoOverload(true);
+            }
+            else if(message.getMessage().contains(PublicStaticFinalConstants.DREAM_OVER_MSG)){
+                log("died in NMZ, stopping script");
+                AFKNode afkNode = (AFKNode) AFKNode.getSingleton(this);
+                ActiveNode activeNode = (ActiveNode) ActiveNode.getSingleton(this);
+                afkNode.setDied(true);
+                activeNode.setDied(true);
+                MethodProvider.sleep(10000);
+                stop(); //if nodes don't catch the death
+            }
+        }
     }
 
 

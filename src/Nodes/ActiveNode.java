@@ -4,58 +4,62 @@ import ScriptClasses.PublicStaticFinalConstants;
 import org.osbot.rs07.api.Inventory;
 import org.osbot.rs07.api.Prayer;
 import org.osbot.rs07.api.Tabs;
-import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.*;
-import org.osbot.rs07.listener.MessageListener;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ThreadLocalRandom;
-/*
-    AFK node does not flick prayer to prevent health regen
-    This Node seeks to emulate a human player leaving his account afk in nmz thereby letting his hp regen up to a random amount (hpRegenLimit)
-    then coming back and guzzling rockcakes back to 1 hp before afking again.
 
+/*
+    ActiveNode node player flicks. It emulates a player more actively checking to ensure that his account is taking as minimum absorption damage as possible
 */
-public class AFKNode implements ExecutableNode {
+
+public class ActiveNode implements ExecutableNode {
     private final static String DRINK = "Drink";
     private final static String GUZZLE = "Guzzle";
-
     private Script hostScriptReference;
     private int hpRegenLimit; //determines when to guzzle back to 1
     private int absorptionMinLimit; //determines when to re-pot absorptions
     private int potionMinBoost; //if using super ranging, determines when to re-pot
 
     //flags to do certain actions
-    private boolean died = false;
-    private boolean doOverload = false; //Prep Node handles initial overload, therefore do not need a need initially
+    private boolean died;
+    private boolean doOverload; //Prep Node handles initial overload, therefore do not need a need initially
+    private boolean doPrayerFlick = true;
 
     private static ExecutableNode singleton = null;
 
-    private AFKNode(Script hostScriptReference){
+    private ActiveNode(Script hostScriptReference){
         this.hostScriptReference = hostScriptReference;
-        this.hpRegenLimit = ThreadLocalRandom.current().nextInt(2, 5); //generate initial random hp limit, this variable is used by handlePotionsAndHP() to determine when to reguzzle back to 1 hp
-        this.absorptionMinLimit = absorptionMinLimit = ThreadLocalRandom.current().nextInt(150, 300);
-        this.potionMinBoost = ThreadLocalRandom.current().nextInt(5, 8); //generate potion min boost, used to determine next re-pot
+        this.hpRegenLimit = ThreadLocalRandom.current().nextInt(2, 6); //generate initial random hp limit, this variable is used by handlePotionsAndHP() to determine when to reguzzle back to 1 hp
+        this.absorptionMinLimit = absorptionMinLimit = ThreadLocalRandom.current().nextInt(100, 250);
+        this.potionMinBoost = ThreadLocalRandom.current().nextInt(3, 7); //generate potion min boost, used to determine next re-pot
+        this.doOverload = true;
     }
 
     public static ExecutableNode getSingleton(Script hostScriptReference) {
         if(singleton == null){
-            singleton = new AFKNode(hostScriptReference);
+            singleton = new ActiveNode(hostScriptReference);
         }
         return singleton;
     }
-
 
     @Override
     public int executeNodeAction() throws InterruptedException {
         boolean drankAbsorptions = handleAbsorptionLvl();
         boolean drankPotions = handlePotionsAndHP();
-        hostScriptReference.getMouse().moveOutsideScreen();
+        if(!doPrayerFlick){
+            hostScriptReference.getMouse().moveOutsideScreen();
+        }
+
         if(!drankAbsorptions && !drankPotions){ //we did not need to drink an absorption or a potion then we are still afking
             PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.AFKING);
         }
+        rapidHealFlick(); //even though the onloop sleep time is ~2s, rapid heal only flicks based doPrayerFlick variable
+        PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.AFKING);
         return (int) PublicStaticFinalConstants.randomNormalDist(2000, 400);
     }
 
@@ -64,13 +68,13 @@ public class AFKNode implements ExecutableNode {
         int absorptionLvl = getAbsorptionLvl();
         if(absorptionLvl < absorptionMinLimit){
             PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.ABSORPTIONS);
-            while(absorptionLvl < 300 && doesPlayerHaveAbsorptionsLeft()){
+            while(absorptionLvl <= 250 && doesPlayerHaveAbsorptionsLeft()){
                 inv.interact(DRINK, PublicStaticFinalConstants.ABSORPTION_POTION_1_ID, PublicStaticFinalConstants.ABSORPTION_POTION_2_ID,
                         PublicStaticFinalConstants.ABSORPTION_POTION_3_ID, PublicStaticFinalConstants.ABSORPTION_POTION_4_ID);
                 absorptionLvl = getAbsorptionLvl();
                 MethodProvider.sleep(PublicStaticFinalConstants.randomNormalDist(PublicStaticFinalConstants.RS_GAME_TICK_MS, 60.0));
             }
-            this.absorptionMinLimit = ThreadLocalRandom.current().nextInt(150, 300);
+            this.absorptionMinLimit = ThreadLocalRandom.current().nextInt(100, 250);
             return true;
         }
         return false;
@@ -79,16 +83,48 @@ public class AFKNode implements ExecutableNode {
     private boolean handlePotionsAndHP() throws InterruptedException {
         openInventoryTab();
         int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
-        if(currentHealth >= hpRegenLimit){
+        if(currentHealth > 1){
             handleOverload();
             guzzleRockCakeTo1();
-            hostScriptReference.getMouse().moveOutsideScreen();
             hpRegenLimit = ThreadLocalRandom.current().nextInt(2, 5); //generate next random hp limit
             return true;
         }
-        hostScriptReference.getMouse().moveOutsideScreen();
         return false;
 
+    }
+
+    private void rapidHealFlick() throws InterruptedException {
+        if(doPrayerFlick){
+            hostScriptReference.log("prayer flicking");
+            PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.PRAYER_FLICK);
+            int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
+            if(currentHealth > 1 && currentHealth <= 49){
+                guzzleRockCakeTo1();
+            }
+
+            if(currentHealth == 1){
+                int currentPrayerPts = hostScriptReference.getSkills().getDynamic(Skill.PRAYER);
+                if(currentPrayerPts > 0){
+                    Prayer prayer = hostScriptReference.getPrayer();
+                    prayer.open();
+                    prayer.set(PrayerButton.RAPID_HEAL, true);
+                    MethodProvider.sleep(PublicStaticFinalConstants.randomNormalDist(1000, 200));
+                    prayer.set(PrayerButton.RAPID_HEAL, false);
+                }
+            }
+            doPrayerFlick = false;
+            //schedule a thread to flip doPrayerFlip to true after ~40s
+            int delay = (int) PublicStaticFinalConstants.randomNormalDist(40000, 3000);
+            hostScriptReference.log("flipping doPrayerFlick to true in " + delay/1000 + "s");
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    doPrayerFlick = true;
+                }
+            }, delay);
+        }
+        openInventoryTab();
+        hostScriptReference.getMouse().moveOutsideScreen();
     }
 
     private boolean drinkSuperRangingPotion(){
@@ -115,8 +151,10 @@ public class AFKNode implements ExecutableNode {
             Prayer prayer = PublicStaticFinalConstants.hostScriptReference.getPrayer();
             prayer.open();
             int currentPrayerPts = hostScriptReference.getSkills().getDynamic(Skill.PRAYER);
+            boolean didMeleePrayer = false;
             if(currentPrayerPts > 0){
                 prayer.set(PrayerButton.PROTECT_FROM_MELEE, true);
+                didMeleePrayer = true;
             }
 
             int startingHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
@@ -129,8 +167,9 @@ public class AFKNode implements ExecutableNode {
                     return estimatedHealthAfterOverload > currentHealth;
                 }
             }.sleep();
-
-            prayer.set(PrayerButton.PROTECT_FROM_MELEE, false);
+            if(didMeleePrayer){
+                prayer.set(PrayerButton.PROTECT_FROM_MELEE, false);
+            }
             doOverload = false;
             hostScriptReference.log("doOverload = false");
         }
@@ -139,6 +178,9 @@ public class AFKNode implements ExecutableNode {
 
     private void guzzleRockCakeTo1() throws InterruptedException {
         int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
+        if(currentHealth > 50){
+            return;
+        }
         while(currentHealth > 1){
             PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.GUZZLING_ROCKCAKES);
             Inventory inv = hostScriptReference.getInventory();
@@ -190,6 +232,4 @@ public class AFKNode implements ExecutableNode {
     public void setDoOverload(boolean doOverload) {
         this.doOverload = doOverload;
     }
-
 }
-

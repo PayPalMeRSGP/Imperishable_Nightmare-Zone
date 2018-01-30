@@ -2,6 +2,7 @@ package ScriptClasses;
 
 import Nodes.ExecutableNode;
 import ScriptClasses.PublicStaticFinalConstants;
+import sun.font.Script;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -21,8 +22,8 @@ public class GraphBasedNodeExecutor {
         }
     }
 
-    private HashMap<ExecutableNode, LinkedList<NodeEdge>> adjMap;
-    private ExecutableNode current;
+    private HashMap<ExecutableNode, LinkedList<NodeEdge>> adjMap; //think of this as an adjacency list
+    private ExecutableNode current; //the current node to execute inside onLoop
 
     public GraphBasedNodeExecutor(ExecutableNode startingNode){
         adjMap = new HashMap<>();
@@ -57,7 +58,14 @@ public class GraphBasedNodeExecutor {
             });
         }
     }
+    /*
+    returns the sleeptime until the next onLoop call.
+    inside onloop there should be a line such as:
+    return executor.executeNodeThenTraverse();
+    where executor is an instance of this class
 
+    sleep times returns are implemented inside the executeNodeAction() in each ExecutableNode instance
+     */
     public int executeNodeThenTraverse() throws InterruptedException {
         int onLoopSleepTime = current.executeNodeAction();
         traverseToNextNode();
@@ -65,14 +73,14 @@ public class GraphBasedNodeExecutor {
     }
 
     private void traverseToNextNode(){
-        // Coding pattern for random percentage branching
-        // https://stackoverflow.com/questions/45836397/coding-pattern-for-random-percentage-branching?noredirect=1&lq=1
         if(current != null){
             LinkedList<NodeEdge> edges = adjMap.get(current);
             if(edges.size() == 0){
-                PublicStaticFinalConstants.hostScriptReference.log("WARN: node: " + current.getClass().getCanonicalName() + " has no outgoing edges! This node will be executed again continuously!");
-                return;
+                return; //if no outgoing edges, current does not get changed therefore the same node will be repeated.
             }
+
+            // Algorithm for random percentage branching
+            // https://stackoverflow.com/questions/45836397/coding-pattern-for-random-percentage-branching?noredirect=1&lq=1
             int combinedWeight = edges.stream().mapToInt(edge -> edge.edgeExecutionWeight).sum();
             int sum = 0;
             int roll = ThreadLocalRandom.current().nextInt(1, combinedWeight+1);
