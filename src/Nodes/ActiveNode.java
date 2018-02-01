@@ -1,5 +1,6 @@
 package Nodes;
 
+import ScriptClasses.PaintInfo;
 import ScriptClasses.PublicStaticFinalConstants;
 import org.osbot.rs07.api.Inventory;
 import org.osbot.rs07.api.Prayer;
@@ -56,19 +57,27 @@ public class ActiveNode implements ExecutableNode {
         }
 
         if(!drankAbsorptions && !drankPotions){ //we did not need to drink an absorption or a potion then we are still afking
-            PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.AFKING);
+            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.AFKING);
         }
         rapidHealFlick(); //even though the onloop sleep time is ~2s, rapid heal only flicks based doPrayerFlick variable
-        PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.AFKING);
+        PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.AFKING);
         return (int) PublicStaticFinalConstants.randomNormalDist(2000, 400);
     }
 
     private boolean handleAbsorptionLvl() throws InterruptedException {
         Inventory inv = hostScriptReference.getInventory();
         int absorptionLvl = getAbsorptionLvl();
-        if(absorptionLvl < absorptionMinLimit){
-            PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.ABSORPTIONS);
-            while(absorptionLvl <= 250 && doesPlayerHaveAbsorptionsLeft()){
+        if(absorptionLvl < 0){
+            boolean absorptionsVisable = hostScriptReference.getWidgets().get(202, 1, 9).isVisible();
+            if(!absorptionsVisable){
+                hostScriptReference.log("absorptions widget is invisible, likely outside dream, stopping");
+                hostScriptReference.stop();
+            }
+
+        }
+        if(absorptionLvl < absorptionMinLimit && absorptionLvl >= 0){
+            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.ABSORPTIONS);
+            while(absorptionLvl < 300 && doesPlayerHaveAbsorptionsLeft()){
                 inv.interact(DRINK, PublicStaticFinalConstants.ABSORPTION_POTION_1_ID, PublicStaticFinalConstants.ABSORPTION_POTION_2_ID,
                         PublicStaticFinalConstants.ABSORPTION_POTION_3_ID, PublicStaticFinalConstants.ABSORPTION_POTION_4_ID);
                 absorptionLvl = getAbsorptionLvl();
@@ -96,7 +105,7 @@ public class ActiveNode implements ExecutableNode {
     private void rapidHealFlick() throws InterruptedException {
         if(doPrayerFlick){
             hostScriptReference.log("prayer flicking");
-            PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.PRAYER_FLICK);
+            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.RAPID_HEAL_FLICK);
             int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
             if(currentHealth > 1 && currentHealth <= 49){
                 guzzleRockCakeTo1();
@@ -142,7 +151,7 @@ public class ActiveNode implements ExecutableNode {
     private void handleOverload() throws InterruptedException {
         openInventoryTab();
         if(doOverload && doesPlayerHaveOverloadsLeft() && doesPlayerHaveAbsorptionsLeft()){
-            PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.OVERLOADING);
+            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.OVERLOADING);
             Inventory inv = hostScriptReference.getInventory();
             inv.interact(DRINK, PublicStaticFinalConstants.OVERLOAD_POTION_1_ID, PublicStaticFinalConstants.OVERLOAD_POTION_2_ID,
                     PublicStaticFinalConstants.OVERLOAD_POTION_3_ID, PublicStaticFinalConstants.OVERLOAD_POTION_4_ID);
@@ -173,7 +182,6 @@ public class ActiveNode implements ExecutableNode {
             doOverload = false;
             hostScriptReference.log("doOverload = false");
         }
-
     }
 
     private void guzzleRockCakeTo1() throws InterruptedException {
@@ -182,7 +190,7 @@ public class ActiveNode implements ExecutableNode {
             return;
         }
         while(currentHealth > 1){
-            PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.GUZZLING_ROCKCAKES);
+            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.GUZZLING_ROCKCAKES);
             Inventory inv = hostScriptReference.getInventory();
             inv.interact(GUZZLE, PublicStaticFinalConstants.DWARVEN_ROCK_CAKE_ID);
             MethodProvider.sleep(PublicStaticFinalConstants.randomNormalDist(PublicStaticFinalConstants.RS_GAME_TICK_MS, 60.0));
@@ -222,7 +230,7 @@ public class ActiveNode implements ExecutableNode {
             return Integer.parseInt(widget.getMessage().replace(",", ""));
         }
 
-        return 0;
+        return -1; //-1 indicates error
     }
 
     public void setDied(boolean died) {

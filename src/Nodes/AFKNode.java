@@ -1,5 +1,6 @@
 package Nodes;
 
+import ScriptClasses.PaintInfo;
 import ScriptClasses.PublicStaticFinalConstants;
 import org.osbot.rs07.api.Inventory;
 import org.osbot.rs07.api.Prayer;
@@ -54,7 +55,7 @@ public class AFKNode implements ExecutableNode {
         boolean drankPotions = handlePotionsAndHP();
         hostScriptReference.getMouse().moveOutsideScreen();
         if(!drankAbsorptions && !drankPotions){ //we did not need to drink an absorption or a potion then we are still afking
-            PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.AFKING);
+            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.AFKING);
         }
         return (int) PublicStaticFinalConstants.randomNormalDist(2000, 400);
     }
@@ -63,7 +64,7 @@ public class AFKNode implements ExecutableNode {
         Inventory inv = hostScriptReference.getInventory();
         int absorptionLvl = getAbsorptionLvl();
         if(absorptionLvl < absorptionMinLimit){
-            PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.ABSORPTIONS);
+            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.ABSORPTIONS);
             while(absorptionLvl < 300 && doesPlayerHaveAbsorptionsLeft()){
                 inv.interact(DRINK, PublicStaticFinalConstants.ABSORPTION_POTION_1_ID, PublicStaticFinalConstants.ABSORPTION_POTION_2_ID,
                         PublicStaticFinalConstants.ABSORPTION_POTION_3_ID, PublicStaticFinalConstants.ABSORPTION_POTION_4_ID);
@@ -106,7 +107,7 @@ public class AFKNode implements ExecutableNode {
     private void handleOverload() throws InterruptedException {
         openInventoryTab();
         if(doOverload && doesPlayerHaveOverloadsLeft() && doesPlayerHaveAbsorptionsLeft()){
-            PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.OVERLOADING);
+            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.OVERLOADING);
             Inventory inv = hostScriptReference.getInventory();
             inv.interact(DRINK, PublicStaticFinalConstants.OVERLOAD_POTION_1_ID, PublicStaticFinalConstants.OVERLOAD_POTION_2_ID,
                     PublicStaticFinalConstants.OVERLOAD_POTION_3_ID, PublicStaticFinalConstants.OVERLOAD_POTION_4_ID);
@@ -115,8 +116,10 @@ public class AFKNode implements ExecutableNode {
             Prayer prayer = PublicStaticFinalConstants.hostScriptReference.getPrayer();
             prayer.open();
             int currentPrayerPts = hostScriptReference.getSkills().getDynamic(Skill.PRAYER);
+            boolean didMeleePrayer = false;
             if(currentPrayerPts > 0){
                 prayer.set(PrayerButton.PROTECT_FROM_MELEE, true);
+                didMeleePrayer = true;
             }
 
             int startingHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
@@ -129,18 +132,21 @@ public class AFKNode implements ExecutableNode {
                     return estimatedHealthAfterOverload > currentHealth;
                 }
             }.sleep();
-
-            prayer.set(PrayerButton.PROTECT_FROM_MELEE, false);
+            if(didMeleePrayer){
+                prayer.set(PrayerButton.PROTECT_FROM_MELEE, false);
+            }
             doOverload = false;
             hostScriptReference.log("doOverload = false");
         }
-
     }
 
     private void guzzleRockCakeTo1() throws InterruptedException {
         int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
+        if(currentHealth > 50){
+            return;
+        }
         while(currentHealth > 1){
-            PublicStaticFinalConstants.setCurrentScriptStatus(PublicStaticFinalConstants.ScriptStatus.GUZZLING_ROCKCAKES);
+            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.GUZZLING_ROCKCAKES);
             Inventory inv = hostScriptReference.getInventory();
             inv.interact(GUZZLE, PublicStaticFinalConstants.DWARVEN_ROCK_CAKE_ID);
             MethodProvider.sleep(PublicStaticFinalConstants.randomNormalDist(PublicStaticFinalConstants.RS_GAME_TICK_MS, 60.0));

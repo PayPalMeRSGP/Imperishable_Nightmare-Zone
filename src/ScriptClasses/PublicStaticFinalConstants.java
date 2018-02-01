@@ -40,15 +40,6 @@ public class PublicStaticFinalConstants {
     public static boolean usingOverload;
     public static boolean usingSuperRanging;
     public static boolean usingAbsorptions;
-    //for paint
-    public enum ScriptStatus {
-        PREPARING, AFKING, OVERLOADING, ABSORPTIONS, GUZZLING_ROCKCAKES, PRAYER_FLICK;
-    }
-    public enum MeleeCombatStyle {
-        ATK, STR, DEF, CTRL;
-    }
-
-    public static ScriptStatus currentScriptStatus;
 
     public static Script hostScriptReference;
 
@@ -68,17 +59,5 @@ public class PublicStaticFinalConstants {
         int randY = ThreadLocalRandom.current().nextInt(upperLeftBound.y, lowerRightBound.y);
         return !hostScriptReference.getMouse().move(randX, randY);
     }
-
-    public static void setCurrentScriptStatus(ScriptStatus currentScriptStatus) {
-        PublicStaticFinalConstants.currentScriptStatus = currentScriptStatus;
-    }
-
-    public static String getCurrentScriptStatus() {
-        if(currentScriptStatus != null){
-            return currentScriptStatus.toString();
-        }
-        return "NULL";
-    }
-
 
 }

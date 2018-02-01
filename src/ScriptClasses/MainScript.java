@@ -3,7 +3,6 @@ package ScriptClasses;
 import Nodes.AFKNode;
 import Nodes.ActiveNode;
 import Nodes.PrepNode;
-import org.osbot.AF;
 import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.listener.MessageListener;
@@ -15,20 +14,19 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import ScriptClasses.PublicStaticFinalConstants.MeleeCombatStyle;
 
-@ScriptManifest(author = "PayPalMeRSGP", name = "PrayerFlickTest1", info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
+@ScriptManifest(author = "PayPalMeRSGP", name = "Range XP tracking4", info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MouseListener, MouseMotionListener, MessageListener {
 
     private long startTime;
-    private MeleeCombatStyle style;
+
     private GraphBasedNodeExecutor executor;
     //for draggable paint
     private int xOffset = 0;
     private int yOffset = 0;
     private int paintRectangleTopLeftX = 0;
     private int paintRectangleTopLeftY = 0;
-    private Rectangle paintArea = new Rectangle(paintRectangleTopLeftX, paintRectangleTopLeftY, 300, 75);
+    private Rectangle paintArea = new Rectangle(paintRectangleTopLeftX, paintRectangleTopLeftY, 350, 75);
     private boolean movingPaint = false;
 
     @Override
@@ -40,7 +38,7 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
 
     @Override
     public int onLoop() throws InterruptedException {
-        determineMeleeStyle();
+        PaintInfo.setCombatStyle();
         return executor.executeNodeThenTraverse();
     }
 
@@ -49,7 +47,7 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
         super.onPaint(g);
         long runTime = System.currentTimeMillis() - startTime;
 
-        PaintXPInfo info = PaintXPInfo.getSingleton(style, this);
+        PaintInfo info = PaintInfo.getSingleton(this);
 
         int hpXpGained = info.getHpXpGained();
         int hpXPH = info.getHpXPH();
@@ -64,20 +62,23 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
         g.fillRect(paintArea.x, paintArea.y, paintArea.width, paintArea.height);
         g.setColor(new Color(255, 255, 255));
 
-        if(style == MeleeCombatStyle.CTRL){
-            paintArea.setBounds(paintRectangleTopLeftX, paintRectangleTopLeftY, 300, 100);
-            g.drawString("ATK" + " LVL: " + formatValue(info.getAtkLvl()) + " XP: " + formatValue(info.getMeleeXpGained()) + " TTL: " + formatTime(info.getAtkTTL()) + " XPH: " + formatValue(info.getMeleeXPH()), paintArea.x + 10, paintArea.y + 15);
-            g.drawString("STR" + " LVL: " + formatValue(info.getStrLvl()) + " XP: " + formatValue(info.getMeleeXpGained()) + " TTL: " + formatTime(info.getStrTTL()) + " XPH: " + formatValue(info.getMeleeXPH()), paintArea.x + 10, paintArea.y + 30);
-            g.drawString("DEF" + " LVL: " + formatValue(info.getDefLvl()) + " XP: " + formatValue(info.getMeleeXpGained()) + " TTL: " + formatTime(info.getDefTTL()) + " XPH: " + formatValue(info.getMeleeXPH()), paintArea.x + 10, paintArea.y + 45);
-            g.drawString("HP LVL: " + formatValue(hpLvl) + " XP: " + formatValue(hpXpGained) + " TTL: " + formatTime(hpTTL) + " XPH: " + formatValue(hpXPH), paintArea.x + 10, paintArea.y + 60);
-            g.drawString("runtime: " + formatTime(runTime), paintArea.x + 10, paintArea.y + 75);
-            g.drawString("status: " + PublicStaticFinalConstants.getCurrentScriptStatus(), paintArea.x + 10, paintArea.y + 90);
-        }
-        else{
-            g.drawString(style.toString() + " LVL: " + formatValue(info.getMeleeLvl()) + " XP: " + formatValue(info.getMeleeXpGained()) + " TTL: " + formatTime(info.getMeleeTTL()) + " XPH: " + formatValue(info.getMeleeXPH()), paintArea.x + 10, paintArea.y + 15);
-            g.drawString("HP LVL: " + formatValue(hpLvl) + " XP: " + formatValue(hpXpGained) + " TTL: " + formatTime(hpTTL) + " XPH: " + formatValue(hpXPH), paintArea.x + 10, paintArea.y + 30);
-            g.drawString("runtime: " + formatTime(runTime), paintArea.x + 10, paintArea.y + 45);
-            g.drawString("status: " + PublicStaticFinalConstants.getCurrentScriptStatus(), paintArea.x + 10, paintArea.y + 60);
+        PaintInfo.CombatStyle style = PaintInfo.getSingleton(this).getStyle();
+        if(style != null){
+            if(style == PaintInfo.CombatStyle.CTRL){
+                paintArea.setBounds(paintRectangleTopLeftX, paintRectangleTopLeftY, 300, 100);
+                g.drawString("ATK" + " LVL: " + formatValue(info.getAtkLvl()) + " XP: " + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getAtkTTL()) + " XPH: " + formatValue(info.getTraiingXPH()), paintArea.x + 10, paintArea.y + 15);
+                g.drawString("STR" + " LVL: " + formatValue(info.getStrLvl()) + " XP: " + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getStrTTL()) + " XPH: " + formatValue(info.getTraiingXPH()), paintArea.x + 10, paintArea.y + 30);
+                g.drawString("DEF" + " LVL: " + formatValue(info.getDefLvl()) + " XP: " + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getDefTTL()) + " XPH: " + formatValue(info.getTraiingXPH()), paintArea.x + 10, paintArea.y + 45);
+                g.drawString("HP LVL: " + formatValue(hpLvl) + " XP: " + formatValue(hpXpGained) + " TTL: " + formatTime(hpTTL) + " XPH: " + formatValue(hpXPH), paintArea.x + 10, paintArea.y + 60);
+                g.drawString("runtime: " + formatTime(runTime), paintArea.x + 10, paintArea.y + 75);
+                g.drawString("status: " + PaintInfo.getSingleton(this).getCurrentScriptStatus(), paintArea.x + 10, paintArea.y + 90);
+            }
+            else{
+                g.drawString(style.toString() + " LVL: " + formatValue(info.getTrainingSkillLvl()) + " XP: " + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getTrainingSkillTTL()) + " XPH: " + formatValue(info.getTraiingXPH()), paintArea.x + 10, paintArea.y + 15);
+                g.drawString("HP LVL: " + formatValue(hpLvl) + " XP: " + formatValue(hpXpGained) + " TTL: " + formatTime(hpTTL) + " XPH: " + formatValue(hpXPH), paintArea.x + 10, paintArea.y + 30);
+                g.drawString("runtime: " + formatTime(runTime), paintArea.x + 10, paintArea.y + 45);
+                g.drawString("status: " + PaintInfo.getSingleton(this).getCurrentScriptStatus(), paintArea.x + 10, paintArea.y + 60);
+            }
         }
     }
 
@@ -103,25 +104,7 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
         getExperienceTracker().start(Skill.ATTACK);
         getExperienceTracker().start(Skill.STRENGTH);
         getExperienceTracker().start(Skill.DEFENCE);
-    }
-
-    private void determineMeleeStyle(){
-        int s = this.getConfigs().get(43);
-        switch (s){
-            case 0:
-                style = MeleeCombatStyle.ATK;
-                break;
-            case 1:
-                style = MeleeCombatStyle.STR;
-                break;
-            case 2:
-                style = MeleeCombatStyle.CTRL;
-                break;
-            case 3:
-                style = MeleeCombatStyle.DEF;
-                break;
-        }
-
+        getExperienceTracker().start(Skill.RANGED);
     }
 
     private String formatTime(final long ms){
@@ -185,7 +168,6 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
 
     @Override
     public void onMessage(Message message) throws InterruptedException {
-        PublicStaticFinalConstants.hostScriptReference.log(message.getMessage());
         if(message.getType() == Message.MessageType.GAME){
             if(message.getMessage().contains(PublicStaticFinalConstants.OVERLOAD_DEPLETED_MSG)){
                 PublicStaticFinalConstants.hostScriptReference.log("recieved overload worn off msg");
