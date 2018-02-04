@@ -10,9 +10,9 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class PublicStaticFinalConstants {
 
+    //onMessage triggers
     public final static String OVERLOAD_DEPLETED_MSG = "The effects of overload have worn off";
     public final static String DREAM_OVER_MSG = "You wake up feeling refreshed";
-
 
     public static final int RS_GAME_TICK_MS = 603;
     //items

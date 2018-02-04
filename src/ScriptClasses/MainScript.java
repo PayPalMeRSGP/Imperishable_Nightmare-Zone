@@ -15,7 +15,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
-@ScriptManifest(author = "PayPalMeRSGP", name = "Range XP tracking4", info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
+@ScriptManifest(author = "PayPalMeRSGP", name = "Test Build", info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MouseListener, MouseMotionListener, MessageListener {
 
     private long startTime;
@@ -170,19 +170,19 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
     public void onMessage(Message message) throws InterruptedException {
         if(message.getType() == Message.MessageType.GAME){
             if(message.getMessage().contains(PublicStaticFinalConstants.OVERLOAD_DEPLETED_MSG)){
-                PublicStaticFinalConstants.hostScriptReference.log("recieved overload worn off msg");
                 AFKNode afkNode = (AFKNode) AFKNode.getSingleton(this);
                 ActiveNode activeNode = (ActiveNode) ActiveNode.getSingleton(this);
                 afkNode.setDoOverload(true);
                 activeNode.setDoOverload(true);
+                this.log("doOverload -> true");
             }
             else if(message.getMessage().contains(PublicStaticFinalConstants.DREAM_OVER_MSG)){
                 log("died in NMZ, stopping script");
                 AFKNode afkNode = (AFKNode) AFKNode.getSingleton(this);
                 ActiveNode activeNode = (ActiveNode) ActiveNode.getSingleton(this);
                 afkNode.setDied(true);
-                activeNode.setDied(true);
-                MethodProvider.sleep(10000);
+                activeNode.setPlayerDied(true);
+                MethodProvider.sleep(5000);
                 stop(); //if nodes don't catch the death
             }
         }

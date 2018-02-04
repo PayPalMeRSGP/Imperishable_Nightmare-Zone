@@ -102,7 +102,9 @@ public class PaintInfo {
         String weaponSlotItem = equipment.getItemInSlot(EquipmentSlot.WEAPON.slot).toString();
         boolean isRanging = weaponSlotItem.contains("bow") || weaponSlotItem.contains("blowpipe");
         if(isRanging){
-            singleton.style =  CombatStyle.RNG;
+            if(singleton != null){
+                singleton.style =  CombatStyle.RNG;
+            }
             return;
         }
 

@@ -2,6 +2,7 @@ package Nodes;
 
 import ScriptClasses.PaintInfo;
 import ScriptClasses.PublicStaticFinalConstants;
+import org.osbot.rs07.api.Camera;
 import org.osbot.rs07.api.Inventory;
 import org.osbot.rs07.api.Prayer;
 import org.osbot.rs07.api.Tabs;
@@ -22,20 +23,19 @@ public class ActiveNode implements ExecutableNode {
     private final static String DRINK = "Drink";
     private final static String GUZZLE = "Guzzle";
     private Script hostScriptReference;
-    private int hpRegenLimit; //determines when to guzzle back to 1
     private int absorptionMinLimit; //determines when to re-pot absorptions
     private int potionMinBoost; //if using super ranging, determines when to re-pot
 
     //flags to do certain actions
-    private boolean died;
+    private boolean playerDied;
     private boolean doOverload; //Prep Node handles initial overload, therefore do not need a need initially
     private boolean doPrayerFlick = true;
+    private boolean doCameraRotation;
 
     private static ExecutableNode singleton = null;
 
     private ActiveNode(Script hostScriptReference){
         this.hostScriptReference = hostScriptReference;
-        this.hpRegenLimit = ThreadLocalRandom.current().nextInt(2, 6); //generate initial random hp limit, this variable is used by handlePotionsAndHP() to determine when to reguzzle back to 1 hp
         this.absorptionMinLimit = absorptionMinLimit = ThreadLocalRandom.current().nextInt(100, 250);
         this.potionMinBoost = ThreadLocalRandom.current().nextInt(3, 7); //generate potion min boost, used to determine next re-pot
         this.doOverload = true;
@@ -59,7 +59,7 @@ public class ActiveNode implements ExecutableNode {
         if(!drankAbsorptions && !drankPotions){ //we did not need to drink an absorption or a potion then we are still afking
             PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.AFKING);
         }
-        rapidHealFlick(); //even though the onloop sleep time is ~2s, rapid heal only flicks based doPrayerFlick variable
+        rapidHealFlick(); //even though the onloop sleep time is ~2s, rapid heal only flicks based doPrayerFlick variable being true
         PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.AFKING);
         return (int) PublicStaticFinalConstants.randomNormalDist(2000, 400);
     }
@@ -69,12 +69,13 @@ public class ActiveNode implements ExecutableNode {
         int absorptionLvl = getAbsorptionLvl();
         if(absorptionLvl < 0){
             boolean absorptionsVisable = hostScriptReference.getWidgets().get(202, 1, 9).isVisible();
-            if(!absorptionsVisable){
+            if(!absorptionsVisable && playerDied){
                 hostScriptReference.log("absorptions widget is invisible, likely outside dream, stopping");
                 hostScriptReference.stop();
             }
 
         }
+        //absorptionLvl >= 0 is because getAbsorptionLvl returns -1 in error cases, such as the widget not being visible.
         if(absorptionLvl < absorptionMinLimit && absorptionLvl >= 0){
             PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.ABSORPTIONS);
             while(absorptionLvl < 300 && doesPlayerHaveAbsorptionsLeft()){
@@ -95,7 +96,6 @@ public class ActiveNode implements ExecutableNode {
         if(currentHealth > 1){
             handleOverload();
             guzzleRockCakeTo1();
-            hpRegenLimit = ThreadLocalRandom.current().nextInt(2, 5); //generate next random hp limit
             return true;
         }
         return false;
@@ -104,16 +104,17 @@ public class ActiveNode implements ExecutableNode {
 
     private void rapidHealFlick() throws InterruptedException {
         if(doPrayerFlick){
-            hostScriptReference.log("prayer flicking");
             PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.RAPID_HEAL_FLICK);
             int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
-            if(currentHealth > 1 && currentHealth <= 49){
+            //(currentHealth <= 49 || !doesPlayerHaveOverloadsLeft()) player still guzzles to 1 if over 49 and overloads are not in inventory
+            if(currentHealth > 1 && (currentHealth <= 49 || !doesPlayerHaveOverloadsLeft())){
                 guzzleRockCakeTo1();
             }
 
             if(currentHealth == 1){
                 int currentPrayerPts = hostScriptReference.getSkills().getDynamic(Skill.PRAYER);
                 if(currentPrayerPts > 0){
+                    //hostScriptReference.log("PRAYER FLICK: flicking prayer, doPrayerFlick -> false");
                     Prayer prayer = hostScriptReference.getPrayer();
                     prayer.open();
                     prayer.set(PrayerButton.RAPID_HEAL, true);
@@ -124,11 +125,12 @@ public class ActiveNode implements ExecutableNode {
             doPrayerFlick = false;
             //schedule a thread to flip doPrayerFlip to true after ~40s
             int delay = (int) PublicStaticFinalConstants.randomNormalDist(40000, 3000);
-            hostScriptReference.log("flipping doPrayerFlick to true in " + delay/1000 + "s");
+            //hostScriptReference.log("PRAYER FLICK: doPrayerFlick -> true in " + delay/1000 + "s");
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
                     doPrayerFlick = true;
+                    //hostScriptReference.log("PRAYER FLICK: doPrayerFlick -> true");
                 }
             }, delay);
         }
@@ -158,10 +160,10 @@ public class ActiveNode implements ExecutableNode {
 
             //while hp is being depleted from overload it is possible to lose alot of absorptions
             Prayer prayer = PublicStaticFinalConstants.hostScriptReference.getPrayer();
-            prayer.open();
             int currentPrayerPts = hostScriptReference.getSkills().getDynamic(Skill.PRAYER);
             boolean didMeleePrayer = false;
             if(currentPrayerPts > 0){
+                prayer.open();
                 prayer.set(PrayerButton.PROTECT_FROM_MELEE, true);
                 didMeleePrayer = true;
             }
@@ -180,7 +182,7 @@ public class ActiveNode implements ExecutableNode {
                 prayer.set(PrayerButton.PROTECT_FROM_MELEE, false);
             }
             doOverload = false;
-            hostScriptReference.log("doOverload = false");
+            hostScriptReference.log("doOverload -> false");
         }
     }
 
@@ -196,6 +198,30 @@ public class ActiveNode implements ExecutableNode {
             MethodProvider.sleep(PublicStaticFinalConstants.randomNormalDist(PublicStaticFinalConstants.RS_GAME_TICK_MS, 60.0));
             currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
         }
+    }
+
+
+    private void randomCameraYawRotation(){
+        if(doCameraRotation){
+            Camera camera = hostScriptReference.getCamera();
+            int yaw = ThreadLocalRandom.current().nextInt(0, 361);
+            camera.moveYaw(yaw);
+            doCameraRotation = false;
+            hostScriptReference.log("CAMERA ROTATION: doCameraRotation -> false");
+        }
+        else{
+            //210000ms = 3.5mins
+            int delay = (int) PublicStaticFinalConstants.randomNormalDist(210000, 15000);
+            hostScriptReference.log("CAMERA ROTATION: doCameraRotation -> true in " + delay/1000 + "s");
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    doCameraRotation = true;
+                    hostScriptReference.log("CAMERA ROTATION: doCameraRotation -> true");
+                }
+            }, delay);
+        }
+
     }
 
     private void openInventoryTab(){
@@ -233,8 +259,8 @@ public class ActiveNode implements ExecutableNode {
         return -1; //-1 indicates error
     }
 
-    public void setDied(boolean died) {
-        this.died = died;
+    public void setPlayerDied(boolean playerDied) {
+        this.playerDied = playerDied;
     }
 
     public void setDoOverload(boolean doOverload) {

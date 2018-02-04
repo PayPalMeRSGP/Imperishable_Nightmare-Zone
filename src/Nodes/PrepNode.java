@@ -73,7 +73,6 @@ public class PrepNode implements ExecutableNode{
             PublicStaticFinalConstants.hostScriptReference.log("guzzling rockcake... hp: " + currentHealth);
             MethodProvider.sleep(PublicStaticFinalConstants.randomNormalDist(PublicStaticFinalConstants.RS_GAME_TICK_MS, 60.0));
         }
-        hostScriptReference.log("exiting setPlayerHealthTo1");
     }
 
     private void turnOnAutoRetaliate(){
