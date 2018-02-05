@@ -59,21 +59,26 @@ public class ActiveNode implements ExecutableNode {
         if(!drankAbsorptions && !drankPotions){ //we did not need to drink an absorption or a potion then we are still afking
             PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.AFKING);
         }
-        rapidHealFlick(); //even though the onloop sleep time is ~2s, rapid heal only flicks based doPrayerFlick variable being true
+        rapidHealFlick(); //even though the onloop sleep time is ~1s, rapid heal only flicks if doPrayerFlick variable is true, else it does nothing
         PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.AFKING);
-        return (int) PublicStaticFinalConstants.randomNormalDist(2000, 400);
+        return (int) PublicStaticFinalConstants.randomNormalDist(1000, 400);
     }
 
     private boolean handleAbsorptionLvl() throws InterruptedException {
         Inventory inv = hostScriptReference.getInventory();
         int absorptionLvl = getAbsorptionLvl();
         if(absorptionLvl < 0){
-            boolean absorptionsVisable = hostScriptReference.getWidgets().get(202, 1, 9).isVisible();
-            if(!absorptionsVisable && playerDied){
-                hostScriptReference.log("absorptions widget is invisible, likely outside dream, stopping");
-                hostScriptReference.stop();
+            RS2Widget absoprtionWidget = hostScriptReference.getWidgets().get(202, 1, 9);
+            if(absoprtionWidget != null){
+                boolean absorptionsVisable = absoprtionWidget.isVisible();
+                if(!absorptionsVisable && playerDied){
+                    hostScriptReference.log("absorptions widget is invisible, likely outside dream, stopping");
+                    hostScriptReference.stop();
+                }
             }
-
+            else{
+                return false;
+            }
         }
         //absorptionLvl >= 0 is because getAbsorptionLvl returns -1 in error cases, such as the widget not being visible.
         if(absorptionLvl < absorptionMinLimit && absorptionLvl >= 0){
@@ -182,7 +187,7 @@ public class ActiveNode implements ExecutableNode {
                 prayer.set(PrayerButton.PROTECT_FROM_MELEE, false);
             }
             doOverload = false;
-            hostScriptReference.log("doOverload -> false");
+            hostScriptReference.log("doOverload -> false (drank overload)");
         }
     }
 

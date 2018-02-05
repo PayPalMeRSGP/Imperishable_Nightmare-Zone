@@ -15,7 +15,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
-@ScriptManifest(author = "PayPalMeRSGP", name = "Test Build", info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
+@ScriptManifest(author = "PayPalMeRSGP", name = "Test Build0", info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MouseListener, MouseMotionListener, MessageListener {
 
     private long startTime;
