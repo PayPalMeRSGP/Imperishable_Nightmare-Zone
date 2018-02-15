@@ -11,23 +11,15 @@ import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 
-@ScriptManifest(author = "PayPalMeRSGP", name = "Test Build0", info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
-public class MainScript extends Script implements MouseListener, MouseMotionListener, MessageListener {
+
+@ScriptManifest(author = "PayPalMeRSGP", name = "test_build0", info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
+public class MainScript extends Script implements MessageListener {
 
     private long startTime;
 
     private GraphBasedNodeExecutor executor;
-    //for draggable paint
-    private int xOffset = 0;
-    private int yOffset = 0;
-    private int paintRectangleTopLeftX = 0;
-    private int paintRectangleTopLeftY = 0;
-    private Rectangle paintArea = new Rectangle(paintRectangleTopLeftX, paintRectangleTopLeftY, 350, 75);
-    private boolean movingPaint = false;
+    private DraggablePaintHandler paintHandler;
 
     @Override
     public void onStart() throws InterruptedException {
@@ -58,6 +50,8 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
         g.drawLine(0, pos.y, 800, pos.y); //horiz line
         g.drawLine(pos.x, 0, pos.x, 500); //vert line
 
+        Rectangle paintArea = paintHandler.getPaintArea();
+
         g.setColor(new Color(156,156,156));
         g.fillRect(paintArea.x, paintArea.y, paintArea.width, paintArea.height);
         g.setColor(new Color(255, 255, 255));
@@ -65,7 +59,7 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
         PaintInfo.CombatStyle style = PaintInfo.getSingleton(this).getStyle();
         if(style != null){
             if(style == PaintInfo.CombatStyle.CTRL){
-                paintArea.setBounds(paintRectangleTopLeftX, paintRectangleTopLeftY, 300, 100);
+                paintArea.setBounds(0, 0, 300, 100);
                 g.drawString("ATK" + " LVL: " + formatValue(info.getAtkLvl()) + " XP: " + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getAtkTTL()) + " XPH: " + formatValue(info.getTraiingXPH()), paintArea.x + 10, paintArea.y + 15);
                 g.drawString("STR" + " LVL: " + formatValue(info.getStrLvl()) + " XP: " + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getStrTTL()) + " XPH: " + formatValue(info.getTraiingXPH()), paintArea.x + 10, paintArea.y + 30);
                 g.drawString("DEF" + " LVL: " + formatValue(info.getDefLvl()) + " XP: " + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getDefTTL()) + " XPH: " + formatValue(info.getTraiingXPH()), paintArea.x + 10, paintArea.y + 45);
@@ -83,8 +77,9 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
     }
 
     private void setUp(){
-        this.bot.addMouseListener(this);
-        this.bot.getCanvas().addMouseMotionListener(this);
+        paintHandler = new DraggablePaintHandler(this);
+        this.bot.addMouseListener(paintHandler);
+
         getBot().addPainter(MainScript.this);
         PublicStaticFinalConstants.setHostScriptReference(this);
 
@@ -117,53 +112,6 @@ public class MainScript extends Script implements MouseListener, MouseMotionList
         return (l > 1_000_000) ? String.format("%.2fm", ((double) l / 1_000_000))
                 : (l > 1000) ? String.format("%.1fk", ((double) l / 1000))
                 : l + "";
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        //not used
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-        Point clickPt = e.getPoint();
-        if(paintArea.contains(clickPt)){
-            movingPaint = true;
-            xOffset = clickPt.x - paintArea.x;
-            yOffset = clickPt.y - paintArea.y;
-        }
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        movingPaint = false;
-        xOffset = 0;
-        yOffset = 0;
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-        //not used
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-        //not used
-    }
-
-
-    @Override
-    public void mouseDragged(MouseEvent e) {
-        if(movingPaint){
-            Point mousePos = e.getPoint();
-            paintArea.x = mousePos.x - xOffset;
-            paintArea.y = mousePos.y - yOffset;
-        }
-    }
-
-    @Override
-    public void mouseMoved(MouseEvent e) {
-        //not used
     }
 
     @Override
