@@ -1,7 +1,6 @@
 package ScriptClasses;
 
 import org.osbot.rs07.input.mouse.BotMouseListener;
-import org.osbot.rs07.script.Script;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -10,14 +9,8 @@ public class DraggablePaintHandler extends BotMouseListener {
 
     private int xOffset = 0;
     private int yOffset = 0;
-    private Rectangle paintArea = new Rectangle(0, 0, 350, 75);
+    private Rectangle paintArea = new Rectangle(0, 0, 200, 115);
     private boolean movingPaint = false;
-
-    private Script hostScriptReference;
-
-    public DraggablePaintHandler(Script hostScriptReference) {
-        this.hostScriptReference = hostScriptReference;
-    }
 
     @Override
     public void checkMouseEvent(MouseEvent mouseEvent) {
@@ -29,6 +22,7 @@ public class DraggablePaintHandler extends BotMouseListener {
                     movingPaint = true;
                     xOffset = clickPt.x - paintArea.x;
                     yOffset = clickPt.y - paintArea.y;
+                    mouseEvent.consume();
                 }
                 break;
 
@@ -39,7 +33,7 @@ public class DraggablePaintHandler extends BotMouseListener {
 
                 break;
         }
-        mouseEvent.consume();
+
 
     }
 

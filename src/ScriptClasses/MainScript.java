@@ -78,7 +78,7 @@ public class MainScript extends Script implements MessageListener {
     }
 
     private void setUp(){
-        paintHandler = new DraggablePaintHandler(this);
+        paintHandler = new DraggablePaintHandler();
         this.bot.addMouseListener(paintHandler);
 
         getBot().addPainter(MainScript.this);
