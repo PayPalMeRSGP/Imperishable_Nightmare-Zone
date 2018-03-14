@@ -1,7 +1,7 @@
 package ScriptClasses;
 
-import Nodes.AFKNode;
-import Nodes.ActiveNode;
+import Nodes.MidDreamNodes.AFKNode;
+import Nodes.MidDreamNodes.ActiveNode;
 import Nodes.PrepNode;
 import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.api.ui.Skill;
@@ -12,9 +12,10 @@ import org.osbot.rs07.script.ScriptManifest;
 
 import java.awt.*;
 
-
-@ScriptManifest(author = "PayPalMeRSGP", name = "test_build0", info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
+@ScriptManifest(author = "PayPalMeRSGP", name = MainScript.BUILD_NUM + " " + MainScript.SCRIPT_NAME, info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MessageListener {
+    static final String SCRIPT_NAME = "Imperishable Nighmare-Zone";
+    static final int BUILD_NUM = 0;
 
     private long startTime;
 
@@ -81,7 +82,7 @@ public class MainScript extends Script implements MessageListener {
         this.bot.addMouseListener(paintHandler);
 
         getBot().addPainter(MainScript.this);
-        PublicStaticFinalConstants.setHostScriptReference(this);
+        Statics.setHostScriptReference(this);
 
         PrepNode prepNode = (PrepNode) PrepNode.getSingleton(this);
         AFKNode afkNode = (AFKNode) AFKNode.getSingleton(this);
@@ -117,18 +118,18 @@ public class MainScript extends Script implements MessageListener {
     @Override
     public void onMessage(Message message) throws InterruptedException {
         if(message.getType() == Message.MessageType.GAME){
-            if(message.getMessage().contains(PublicStaticFinalConstants.OVERLOAD_DEPLETED_MSG)){
+            if(message.getMessage().contains(Statics.OVERLOAD_DEPLETED_MSG)){
                 AFKNode afkNode = (AFKNode) AFKNode.getSingleton(this);
                 ActiveNode activeNode = (ActiveNode) ActiveNode.getSingleton(this);
                 afkNode.setDoOverload(true);
                 activeNode.setDoOverload(true);
                 this.log("doOverload -> true");
             }
-            else if(message.getMessage().contains(PublicStaticFinalConstants.DREAM_OVER_MSG)){
+            else if(message.getMessage().contains(Statics.DREAM_OVER_MSG)){
                 log("died in NMZ, stopping script");
                 AFKNode afkNode = (AFKNode) AFKNode.getSingleton(this);
                 ActiveNode activeNode = (ActiveNode) ActiveNode.getSingleton(this);
-                afkNode.setDied(true);
+                afkNode.setPlayerDied(true);
                 activeNode.setPlayerDied(true);
                 MethodProvider.sleep(5000);
                 stop(); //if nodes don't catch the death

@@ -8,7 +8,7 @@ import java.awt.Point;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class PublicStaticFinalConstants {
+public class Statics {
 
     //onMessage triggers
     public final static String OVERLOAD_DEPLETED_MSG = "The effects of overload have worn off";
@@ -43,7 +43,7 @@ public class PublicStaticFinalConstants {
 
     public static Script hostScriptReference;
 
-    private PublicStaticFinalConstants(){} //meant to be a constant provider, no constructor
+    private Statics(){} //meant to be a constant provider, no constructor
 
     public static void setHostScriptReference(Script ref){
         hostScriptReference = ref;

@@ -5,7 +5,7 @@ import org.osbot.rs07.api.ui.EquipmentSlot;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.Script;
 
-import static ScriptClasses.PublicStaticFinalConstants.hostScriptReference;
+import static ScriptClasses.Statics.hostScriptReference;
 
 public class PaintInfo {
     //for ctrl atk style. You need these variables separately
