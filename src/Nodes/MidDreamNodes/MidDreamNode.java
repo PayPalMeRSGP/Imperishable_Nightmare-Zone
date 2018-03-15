@@ -30,6 +30,7 @@ public abstract class MidDreamNode implements ExecutableNode {
     private boolean playerDied;
     private boolean doOverload;
     private boolean doCameraRotation;
+    private boolean noPrayer;
 
     MidDreamNode(Script hostScriptReference){
         this.hostScriptReference = hostScriptReference;
@@ -65,13 +66,19 @@ public abstract class MidDreamNode implements ExecutableNode {
         if(absorptionLvl < absorptionMinLimit && absorptionLvl >= 0){
             PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.ABSORPTIONS);
             openInventoryTab();
-            while(absorptionLvl < 300 && doesPlayerHaveAbsorptionsLeft()){
+            while(absorptionLvl < absorptionMinLimit && doesPlayerHaveAbsorptionsLeft()){
                 inv.interact(DRINK, Statics.ABSORPTION_POTION_1_ID, Statics.ABSORPTION_POTION_2_ID,
                         Statics.ABSORPTION_POTION_3_ID, Statics.ABSORPTION_POTION_4_ID);
                 absorptionLvl = getAbsorptionLvl();
                 MethodProvider.sleep(Statics.randomNormalDist(Statics.RS_GAME_TICK_MS, 60.0));
             }
-            this.absorptionMinLimit = ThreadLocalRandom.current().nextInt(200, 400);
+            if(noPrayer){
+                this.absorptionMinLimit = ThreadLocalRandom.current().nextInt(400, 600);
+            }
+            else{
+                this.absorptionMinLimit = ThreadLocalRandom.current().nextInt(200, 400);
+            }
+
             return true;
         }
         return false;
@@ -116,6 +123,9 @@ public abstract class MidDreamNode implements ExecutableNode {
                 prayer.open();
                 prayer.set(PrayerButton.PROTECT_FROM_MELEE, true);
                 didMeleePrayer = true;
+            }
+            else{
+                noPrayer = true;
             }
 
             int startingHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
