@@ -15,7 +15,7 @@ import java.awt.*;
 @ScriptManifest(author = "PayPalMeRSGP", name = MainScript.BUILD_NUM + " " + MainScript.SCRIPT_NAME, info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MessageListener {
     static final String SCRIPT_NAME = "Imperishable Nighmare-Zone";
-    static final int BUILD_NUM = 0;
+    static final int BUILD_NUM = 1;
 
     private long startTime;
 
@@ -61,18 +61,38 @@ public class MainScript extends Script implements MessageListener {
         if(style != null){
             if(style == PaintInfo.CombatStyle.CTRL){
                 paintArea.setBounds(0, 0, 300, 100);
-                g.drawString("ATK" + " LVL: " + formatValue(info.getAtkLvl()) + " XP: " + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getAtkTTL()) + " XPH: " + formatValue(info.getTraiingXPH()), paintArea.x + 10, paintArea.y + 15);
-                g.drawString("STR" + " LVL: " + formatValue(info.getStrLvl()) + " XP: " + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getStrTTL()) + " XPH: " + formatValue(info.getTraiingXPH()), paintArea.x + 10, paintArea.y + 30);
-                g.drawString("DEF" + " LVL: " + formatValue(info.getDefLvl()) + " XP: " + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getDefTTL()) + " XPH: " + formatValue(info.getTraiingXPH()), paintArea.x + 10, paintArea.y + 45);
-                g.drawString("HP LVL: " + formatValue(hpLvl) + " XP: " + formatValue(hpXpGained) + " TTL: " + formatTime(hpTTL) + " XPH: " + formatValue(hpXPH), paintArea.x + 10, paintArea.y + 60);
+                g.drawString("ATK" + " LVL: " + formatValue(info.getAtkLvl()) + " XP: "
+                        + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getAtkTTL()) + " XPH: "
+                        + formatValue(info.getTraiingXPH()), paintArea.x + 10, paintArea.y + 15);
+
+                g.drawString("STR" + " LVL: " + formatValue(info.getStrLvl()) + " XP: "
+                        + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getStrTTL()) + " XPH: "
+                        + formatValue(info.getTraiingXPH()), paintArea.x + 10, paintArea.y + 30);
+
+                g.drawString("DEF" + " LVL: " + formatValue(info.getDefLvl()) + " XP: "
+                        + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getDefTTL()) + " XPH: "
+                        + formatValue(info.getTraiingXPH()), paintArea.x + 10, paintArea.y + 45);
+
+                g.drawString("HP LVL: " + formatValue(hpLvl) + " XP: " + formatValue(hpXpGained) + " TTL: "
+                        + formatTime(hpTTL) + " XPH: " + formatValue(hpXPH), paintArea.x + 10, paintArea.y + 60);
+
                 g.drawString("runtime: " + formatTime(runTime), paintArea.x + 10, paintArea.y + 75);
-                g.drawString("status: " + PaintInfo.getSingleton(this).getCurrentScriptStatus(), paintArea.x + 10, paintArea.y + 90);
+
+                g.drawString("status: " + PaintInfo.getSingleton(this)
+                        .getCurrentScriptStatus(), paintArea.x + 10, paintArea.y + 90);
             }
             else{
-                g.drawString(style.toString() + " LVL: " + formatValue(info.getTrainingSkillLvl()) + " XP: " + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getTrainingSkillTTL()) + " XPH: " + formatValue(info.getTraiingXPH()), paintArea.x + 10, paintArea.y + 15);
-                g.drawString("HP LVL: " + formatValue(hpLvl) + " XP: " + formatValue(hpXpGained) + " TTL: " + formatTime(hpTTL) + " XPH: " + formatValue(hpXPH), paintArea.x + 10, paintArea.y + 30);
+                g.drawString(style.toString() + " LVL: " + formatValue(info.getTrainingSkillLvl()) + " XP: "
+                        + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getTrainingSkillTTL())
+                        + " XPH: " + formatValue(info.getTraiingXPH()), paintArea.x + 10, paintArea.y + 15);
+
+                g.drawString("HP LVL: " + formatValue(hpLvl) + " XP: " + formatValue(hpXpGained) + " TTL: "
+                        + formatTime(hpTTL) + " XPH: " + formatValue(hpXPH), paintArea.x + 10, paintArea.y + 30);
+
                 g.drawString("runtime: " + formatTime(runTime), paintArea.x + 10, paintArea.y + 45);
-                g.drawString("status: " + PaintInfo.getSingleton(this).getCurrentScriptStatus(), paintArea.x + 10, paintArea.y + 60);
+
+                g.drawString("status: " + PaintInfo.getSingleton(this)
+                        .getCurrentScriptStatus(), paintArea.x + 10, paintArea.y + 60);
             }
         }
     }
@@ -132,7 +152,7 @@ public class MainScript extends Script implements MessageListener {
                 afkNode.setPlayerDied(true);
                 activeNode.setPlayerDied(true);
                 MethodProvider.sleep(5000);
-                stop(); //if nodes don't catch the death
+                stop(false); //if nodes don't catch the death
             }
         }
     }

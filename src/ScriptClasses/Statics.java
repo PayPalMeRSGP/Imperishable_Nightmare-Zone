@@ -1,10 +1,9 @@
 package ScriptClasses;
 
 import org.osbot.rs07.api.map.Area;
-import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.script.Script;
 
-import java.awt.Point;
+import java.awt.*;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
