@@ -1,7 +1,7 @@
 package Nodes.MidDreamNodes;
 
 import Nodes.ExecutableNode;
-import ScriptClasses.PaintInfo;
+import ScriptClasses.Paint.PaintInfo;
 import ScriptClasses.Statics;
 import org.osbot.rs07.api.Prayer;
 import org.osbot.rs07.api.ui.*;
@@ -34,16 +34,23 @@ public class ActiveNode extends MidDreamNode {
     @Override
     public int executeNodeAction() throws InterruptedException {
         overloadFailSafe();
-        boolean drankAbsorptions = handleAbsorptionLvl();
-        boolean drankPotions = handlePotionsAndHP();
+        handleAbsorptionLvl();
+        if(hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS) > 1){
+            if(!handleOverload()){
+                guzzleRockCakeTo1();
+            }
+        }
+
+        if(ThreadLocalRandom.current().nextBoolean()){
+            handleSpecialAttack();
+        }
+
+        rapidHealFlick(); //rapid heal only flicks if doPrayerFlick variable is true, else it does nothing
+        randomCameraYawRotation();
         if(!doPrayerFlick){
             hostScriptReference.getMouse().moveOutsideScreen();
         }
 
-        if(!drankAbsorptions && !drankPotions){ //we did not need to drink an absorption or a potion therefore script is still afking
-            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.AFKING);
-        }
-        rapidHealFlick(); //rapid heal only flicks if doPrayerFlick variable is true, else it does nothing
         PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.AFKING);
         return (int) Statics.randomNormalDist(1000, 500);
     }

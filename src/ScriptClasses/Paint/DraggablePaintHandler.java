@@ -1,4 +1,4 @@
-package ScriptClasses;
+package ScriptClasses.Paint;
 
 import org.osbot.rs07.input.mouse.BotMouseListener;
 

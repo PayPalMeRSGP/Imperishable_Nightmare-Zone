@@ -1,17 +1,21 @@
 package Nodes;
 
-import ScriptClasses.PaintInfo;
+import ScriptClasses.Paint.PaintInfo;
 import ScriptClasses.Statics;
 import org.osbot.rs07.api.Inventory;
 import org.osbot.rs07.api.Menu;
 import org.osbot.rs07.api.Mouse;
+import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.api.ui.Tab;
+import org.osbot.rs07.event.WalkingEvent;
 import org.osbot.rs07.input.mouse.InventorySlotDestination;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 public class PrepNode implements ExecutableNode{
     private Script hostScriptReference;
@@ -32,10 +36,58 @@ public class PrepNode implements ExecutableNode{
     @Override
     public int executeNodeAction() throws InterruptedException {
         PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.PREPARING);
-        drinkAbsorptions();
-        setPlayerHealthTo1();
-        turnOnAutoRetaliate();
+        if(walkToCorner()){
+            drinkAbsorptions();
+            setPlayerHealthTo1();
+            turnOnAutoRetaliate();
+        }
+
         return 1000;
+    }
+
+    private boolean walkToCorner() throws InterruptedException {
+        int corner = ThreadLocalRandom.current().nextInt(0, 4);
+        WalkingEvent walk;
+        switch(corner){
+            case 0: //SE corner
+                walk = setUpWalker(63, 48);
+                break;
+            case 1: //SW corner
+                walk = setUpWalker(32, 48);
+                break;
+            case 2: //NW corner
+                walk = setUpWalker(32, 48);
+                break;
+            case 3: //NE corner
+                walk = setUpWalker(32, 48);
+                break;
+            default:
+                throw new UnsupportedOperationException("hit default in walkToCorner");
+        }
+        if(walk != null){
+            hostScriptReference.execute(walk);
+            final boolean[] finished = new boolean[1];
+            new ConditionalSleep(20000) {
+                @Override
+                public boolean condition() throws InterruptedException {
+                    finished[0] = walk.hasFinished();
+                    return finished[0];
+                }
+            }.sleep();
+            return finished[0];
+        }
+        return false;
+    }
+
+    private WalkingEvent setUpWalker(int localX, int localY){
+        int actualX = hostScriptReference.getMap().getBaseX() + localX;
+        int actualY = hostScriptReference.getMap().getBaseY() + localY;
+        int z = hostScriptReference.myPlayer().getPosition().getZ();
+        WalkingEvent walk = new WalkingEvent(new Position(actualX, actualY, z));
+        walk.setMiniMapDistanceThreshold(5);
+        walk.setOperateCamera(true);
+        walk.setMinDistanceThreshold(0);
+        return walk;
     }
 
     private void drinkAbsorptions() throws InterruptedException {

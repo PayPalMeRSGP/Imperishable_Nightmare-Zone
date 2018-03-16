@@ -3,6 +3,8 @@ package ScriptClasses;
 import Nodes.MidDreamNodes.AFKNode;
 import Nodes.MidDreamNodes.ActiveNode;
 import Nodes.PrepNode;
+import ScriptClasses.Paint.DraggablePaintHandler;
+import ScriptClasses.Paint.PaintInfo;
 import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.listener.MessageListener;
@@ -15,7 +17,7 @@ import java.awt.*;
 @ScriptManifest(author = "PayPalMeRSGP", name = MainScript.BUILD_NUM + " " + MainScript.SCRIPT_NAME, info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MessageListener {
     static final String SCRIPT_NAME = "Imperishable Nighmare-Zone";
-    static final int BUILD_NUM = 2;
+    static final int BUILD_NUM = 6;
 
     private long startTime;
 
@@ -132,7 +134,7 @@ public class MainScript extends Script implements MessageListener {
                 afkNode.setPlayerDied(true);
                 activeNode.setPlayerDied(true);
                 MethodProvider.sleep(5000);
-                stop(); //if nodes don't catch the death
+                stop(false); //if nodes don't catch the death
             }
         }
     }

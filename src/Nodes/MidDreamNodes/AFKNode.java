@@ -1,15 +1,10 @@
 package Nodes.MidDreamNodes;
 
 import Nodes.ExecutableNode;
-import ScriptClasses.PaintInfo;
+import ScriptClasses.Paint.PaintInfo;
 import ScriptClasses.Statics;
-import org.osbot.rs07.api.Inventory;
-import org.osbot.rs07.api.Prayer;
-import org.osbot.rs07.api.Tabs;
 import org.osbot.rs07.api.ui.*;
-import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
-import org.osbot.rs07.utility.ConditionalSleep;
 
 import java.util.concurrent.ThreadLocalRandom;
 /*
@@ -21,8 +16,11 @@ import java.util.concurrent.ThreadLocalRandom;
 public class AFKNode extends MidDreamNode {
     private static ExecutableNode singleton = null;
 
+    private int hpMaxLimit;
+
     private AFKNode(Script hostScriptReference){
         super(hostScriptReference);
+        this.hpMaxLimit = ThreadLocalRandom.current().nextInt(2, 5);
     }
 
     public static ExecutableNode getSingleton(Script hostScriptReference) {
@@ -35,12 +33,13 @@ public class AFKNode extends MidDreamNode {
     @Override
     public int executeNodeAction() throws InterruptedException {
         overloadFailSafe();
-        boolean drankAbsorptions = handleAbsorptionLvl();
-        boolean drankPotions = handlePotionsAndHP();
-        hostScriptReference.getMouse().moveOutsideScreen();
-        if(!drankAbsorptions && !drankPotions){ //we did not need to drink an absorption or a potion then we are still afking
-            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.AFKING);
+
+        if(hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS) > hpMaxLimit){
+            handleOverload();
+            guzzleRockCakeTo1();
         }
+        hostScriptReference.getMouse().moveOutsideScreen();
+        PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.AFKING);
         return (int) Statics.randomNormalDist(2000, 1000);
     }
 

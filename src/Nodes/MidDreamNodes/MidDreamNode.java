@@ -1,16 +1,15 @@
 package Nodes.MidDreamNodes;
 
 import Nodes.ExecutableNode;
-import ScriptClasses.PaintInfo;
+import ScriptClasses.Paint.PaintInfo;
 import ScriptClasses.Statics;
-import org.osbot.rs07.api.Camera;
-import org.osbot.rs07.api.Inventory;
-import org.osbot.rs07.api.Prayer;
-import org.osbot.rs07.api.Tabs;
+import org.osbot.rs07.api.*;
+import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.PrayerButton;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.api.ui.Tab;
+import org.osbot.rs07.event.WalkingEvent;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
@@ -32,11 +31,13 @@ public abstract class MidDreamNode implements ExecutableNode {
     private boolean doCameraRotation;
     private boolean noPrayer;
 
+
     MidDreamNode(Script hostScriptReference){
         this.hostScriptReference = hostScriptReference;
         this.absorptionMinLimit =  ThreadLocalRandom.current().nextInt(200, 400);
         this.potionMinBoost = ThreadLocalRandom.current().nextInt(3, 7); //generate potion min boost, used to determine next re-pot
         this.doOverload = true;
+        this.noPrayer = false;
     }
 
     void overloadFailSafe(){
@@ -46,20 +47,17 @@ public abstract class MidDreamNode implements ExecutableNode {
         }
     }
 
-    boolean handleAbsorptionLvl() throws InterruptedException {
+    void handleAbsorptionLvl() throws InterruptedException {
         Inventory inv = hostScriptReference.getInventory();
         int absorptionLvl = getAbsorptionLvl();
         if(absorptionLvl < 0){
-            RS2Widget absoprtionWidget = hostScriptReference.getWidgets().get(202, 1, 9);
-            if(absoprtionWidget != null){
-                boolean absorptionsVisable = absoprtionWidget.isVisible();
+            RS2Widget absorptionWidget = hostScriptReference.getWidgets().get(202, 1, 9);
+            if(absorptionWidget != null){
+                boolean absorptionsVisable = absorptionWidget.isVisible();
                 if(!absorptionsVisable && playerDied){
                     hostScriptReference.log("absorptions widget is invisible, likely outside dream, stopping");
-                    hostScriptReference.stop();
+                    hostScriptReference.stop(false);
                 }
-            }
-            else{
-                return false;
             }
         }
         //absorptionLvl >= 0 is because getAbsorptionLvl returns -1 in error cases, such as the widget not being visible.
@@ -78,22 +76,9 @@ public abstract class MidDreamNode implements ExecutableNode {
             else{
                 this.absorptionMinLimit = ThreadLocalRandom.current().nextInt(200, 400);
             }
-
-            return true;
         }
-        return false;
     }
 
-    boolean handlePotionsAndHP() throws InterruptedException {
-        int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
-        if(currentHealth > 1){
-            handleOverload();
-            guzzleRockCakeTo1();
-            return true;
-        }
-        return false;
-
-    }
 
     boolean drinkSuperRangingPotion(){
         openInventoryTab();
@@ -107,12 +92,13 @@ public abstract class MidDreamNode implements ExecutableNode {
         return false;
     }
 
-    private void handleOverload() throws InterruptedException {
+    boolean handleOverload() throws InterruptedException {
+        boolean interacted = false;
         if(doOverload && doesPlayerHaveOverloadsLeft() && doesPlayerHaveAbsorptionsLeft()){
             PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.OVERLOADING);
             openInventoryTab();
             Inventory inv = hostScriptReference.getInventory();
-            inv.interact(DRINK, Statics.OVERLOAD_POTION_1_ID, Statics.OVERLOAD_POTION_2_ID,
+            interacted = inv.interact(DRINK, Statics.OVERLOAD_POTION_1_ID, Statics.OVERLOAD_POTION_2_ID,
                     Statics.OVERLOAD_POTION_3_ID, Statics.OVERLOAD_POTION_4_ID);
 
             //while hp is being depleted from overload it is possible to lose alot of absorptions
@@ -129,13 +115,13 @@ public abstract class MidDreamNode implements ExecutableNode {
             }
 
             int startingHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
-            int estimatedHealthAfterOverload = startingHealth - 49;
+            int estimatedHealthAfterOverload = startingHealth - 51;
             new ConditionalSleep(7000, 500){
                 @Override
                 public boolean condition() throws InterruptedException {
-
                     int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
-                    return estimatedHealthAfterOverload > currentHealth;
+                    int difference = Math.abs(estimatedHealthAfterOverload - currentHealth);
+                    return difference < 5;
                 }
             }.sleep();
             if(didMeleePrayer){
@@ -144,6 +130,7 @@ public abstract class MidDreamNode implements ExecutableNode {
             doOverload = false;
             hostScriptReference.log("doOverload -> false (drank overload)");
         }
+        return interacted;
     }
 
     void guzzleRockCakeTo1() throws InterruptedException {
@@ -170,8 +157,8 @@ public abstract class MidDreamNode implements ExecutableNode {
             hostScriptReference.log("CAMERA ROTATION: doCameraRotation -> false");
         }
         else{
-            //210000ms = 3.5mins
-            int delay = (int) Statics.randomNormalDist(210000, 15000);
+            //1200000ms = 20mins
+            int delay = (int) Statics.randomNormalDist(1200000, 300000);
             hostScriptReference.log("CAMERA ROTATION: doCameraRotation -> true in " + delay/1000 + "s");
             new Timer().schedule(new TimerTask() {
                 @Override
@@ -182,6 +169,63 @@ public abstract class MidDreamNode implements ExecutableNode {
             }, delay);
         }
 
+    }
+
+    void handleSpecialAttack() throws InterruptedException {
+        Combat combat = hostScriptReference.getCombat();
+        if(combat.getSpecialPercentage() == 100){
+            if(hostScriptReference.getTabs().open(Tab.ATTACK)){ //meant to add a delay after switching to attack tab
+                PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.SPECIAL_ATK);
+                MethodProvider.sleep(Statics.randomNormalDist(1200, 200));
+                combat.toggleSpecialAttack(true);
+            }
+
+        }
+    }
+
+    private boolean walkToCorner() throws InterruptedException {
+        int corner = ThreadLocalRandom.current().nextInt(0, 4);
+        WalkingEvent walk;
+        switch(corner){
+            case 0: //SE corner
+                walk = setUpWalker(63, 48);
+                break;
+            case 1: //SW corner
+                walk = setUpWalker(32, 48);
+                break;
+            case 2: //NW corner
+                walk = setUpWalker(32, 48);
+                break;
+            case 3: //NE corner
+                walk = setUpWalker(32, 48);
+                break;
+            default:
+                throw new UnsupportedOperationException("hit default in walkToCorner");
+        }
+        if(walk != null){
+            hostScriptReference.execute(walk);
+            final boolean[] finished = new boolean[1];
+            new ConditionalSleep(20000) {
+                @Override
+                public boolean condition() throws InterruptedException {
+                    finished[0] = walk.hasFinished();
+                    return finished[0];
+                }
+            }.sleep();
+            return finished[0];
+        }
+        return false;
+    }
+
+    private WalkingEvent setUpWalker(int localX, int localY){
+        int actualX = hostScriptReference.getMap().getBaseX() + localX;
+        int actualY = hostScriptReference.getMap().getBaseY() + localY;
+        int z = hostScriptReference.myPlayer().getPosition().getZ();
+        WalkingEvent walk = new WalkingEvent(new Position(actualX, actualY, z));
+        walk.setMiniMapDistanceThreshold(5);
+        walk.setOperateCamera(true);
+        walk.setMinDistanceThreshold(0);
+        return walk;
     }
 
     void openInventoryTab(){

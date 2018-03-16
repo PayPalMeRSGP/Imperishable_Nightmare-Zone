@@ -1,4 +1,4 @@
-package ScriptClasses;
+package ScriptClasses.Paint;
 
 import org.osbot.rs07.api.Equipment;
 import org.osbot.rs07.api.ui.EquipmentSlot;
@@ -32,7 +32,7 @@ public class PaintInfo {
 
     //non-xp
     public enum ScriptStatus {
-        PREPARING, AFKING, OVERLOADING, ABSORPTIONS, GUZZLING_ROCKCAKES, RAPID_HEAL_FLICK;
+        PREPARING, AFKING, OVERLOADING, ABSORPTIONS, GUZZLING_ROCKCAKES, RAPID_HEAL_FLICK, SPECIAL_ATK;
     }
     public enum CombatStyle {
         ATK, STR, DEF, CTRL, RNG;
@@ -97,34 +97,35 @@ public class PaintInfo {
 
     //call in onloop
     public static void setCombatStyle(){
-        int s = hostScriptReference.getConfigs().get(43);
-        Equipment equipment = hostScriptReference.getEquipment();
-        String weaponSlotItem = equipment.getItemInSlot(EquipmentSlot.WEAPON.slot).toString();
-        boolean isRanging = weaponSlotItem.contains("bow") || weaponSlotItem.contains("blowpipe");
-        if(isRanging){
-            if(singleton != null){
-                singleton.style =  CombatStyle.RNG;
+        if(singleton != null){
+            int s = hostScriptReference.getConfigs().get(43);
+            Equipment equipment = hostScriptReference.getEquipment();
+            String weaponSlotItem = equipment.getItemInSlot(EquipmentSlot.WEAPON.slot).toString();
+            boolean isRanging = weaponSlotItem.contains("bow") || weaponSlotItem.contains("blowpipe");
+            if(isRanging){
+                if(singleton != null){
+                    singleton.style =  CombatStyle.RNG;
+                }
+                return;
             }
-            return;
-        }
 
-        switch (s){
-            case 0:
-                singleton.style = CombatStyle.ATK;
-                break;
-            case 1:
-                singleton.style = CombatStyle.STR;
-                break;
-            case 2:
-                singleton.style = CombatStyle.CTRL;
-                break;
-            case 3:
-                singleton.style = CombatStyle.DEF;
-                break;
-            default:
-                hostScriptReference.log("WARNING: hit default case in setCombatStyle switch statement");
+            switch (s){
+                case 0:
+                    singleton.style = CombatStyle.ATK;
+                    break;
+                case 1:
+                    singleton.style = CombatStyle.STR;
+                    break;
+                case 2:
+                    singleton.style = CombatStyle.CTRL;
+                    break;
+                case 3:
+                    singleton.style = CombatStyle.DEF;
+                    break;
+                default:
+                    hostScriptReference.log("WARNING: hit default case in setCombatStyle switch statement");
+            }
         }
-
     }
 
     public ScriptStatus getCurrentScriptStatus() {
