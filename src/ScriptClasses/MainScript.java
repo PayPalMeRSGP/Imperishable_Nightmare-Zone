@@ -4,10 +4,10 @@ import Nodes.MidDreamNodes.AFKNode;
 import Nodes.MidDreamNodes.ActiveNode;
 import Nodes.MidDreamNodes.PrepNode;
 import ScriptClasses.Paint.DraggablePaintHandler;
-import ScriptClasses.Paint.CombatXPPainter;
+import ScriptClasses.Paint.CombatXPTracker;
+import ScriptClasses.Paint.ScriptStatusPainter;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.ui.Message;
-import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.listener.MessageListener;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
@@ -18,12 +18,12 @@ import java.awt.*;
 @ScriptManifest(author = "PayPalMeRSGP", name = MainScript.BUILD_NUM + " " + MainScript.SCRIPT_NAME, info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MessageListener {
     static final String SCRIPT_NAME = "Imperishable Nightmare-Zone";
-    static final int BUILD_NUM = 1;
-
-    private long startTime;
+    static final int BUILD_NUM = 11;
 
     private GraphBasedNodeExecutor executor;
     private DraggablePaintHandler paintHandler;
+    private CombatXPTracker tracker;
+    private Rectangle paintArea;
 
     @Override
     public void onStart() throws InterruptedException {
@@ -34,78 +34,92 @@ public class MainScript extends Script implements MessageListener {
 
     @Override
     public int onLoop() throws InterruptedException {
-        CombatXPPainter.setCombatStyle();
+        tracker.setCombatStyle();
         return executor.executeNodeThenTraverse();
     }
 
     @Override
     public void onPaint(Graphics2D g) {
         super.onPaint(g);
-        long runTime = System.currentTimeMillis() - startTime;
+        paintArea = paintHandler.getPaintArea();
+        g.setColor(new Color(156,156,156, 127));
+        g.fillRect(paintArea.x, paintArea.y, paintArea.width, paintArea.height);
 
-        CombatXPPainter info = CombatXPPainter.getSingleton(this);
+        if(tracker != null){
+            if(tracker.getStyle() != null){
+                g.setColor(new Color(255, 255, 255));
+                if(tracker.getStyle() == CombatXPTracker.CombatStyle.CTRL){
+                    paintArea.setBounds(0, 0, 300, 135);
+                    int[] atkStrDef = tracker.getAtkStrDefLvls();
+                    g.drawString("ATK LVL: " + atkStrDef[0]
+                            + " XP: " + formatValue(tracker.getAtkLvl())
+                            + " TTL: " + formatTime(tracker.getAtkTTL())
+                            + " XPH: " + formatValue(tracker.getTrainingXPH()),
+                            paintArea.x + 10, paintArea.y + 15);
 
-        int hpXpGained = info.getHpXpGained();
-        int hpXPH = info.getHpXPH();
-        long hpTTL = info.getHpTTL();
-        int hpLvl = info.getHpLvl();
+                    g.drawString("STR LVL: " + atkStrDef[1]
+                            + " XP: " + formatValue(tracker.getStrLvl())
+                            + " TTL: " + formatTime(tracker.getStrTTL()),
+                            paintArea.x + 10, paintArea.y + 30);
+
+                    g.drawString("DEF LVL: " + atkStrDef[2]
+                            + " XP: " + formatValue(tracker.getTrainingXpGained())
+                            + " TTL: " + formatTime(tracker.getDefTTL()),
+                            paintArea.x + 10, paintArea.y + 45);
+
+                    g.drawString("HP LVL: " + tracker.getHpLvl()
+                            + " XP: " + formatValue(tracker.getHpXpGained())
+                            + " TTL: " + formatTime(tracker.getHpTTL())
+                            + " XPH: " + formatValue(tracker.getHpXPH()),
+                            paintArea.x + 10, paintArea.y + 60);
+
+                    g.drawString("Runtime: " + formatTime(tracker.getRunTime()),
+                            paintArea.x + 10, paintArea.y + 75);
+
+                    g.drawString("Status: " + ScriptStatusPainter.getCurrentScriptStatus(),
+                            paintArea.x + 10, paintArea.y + 90);
+
+                    g.drawString("Overload Timer: ~" + ScriptStatusPainter.getOverloadSecondsLeft()+"s",
+                            paintArea.x + 10, paintArea.y + 105);
+
+                    g.drawString("Prayer Flick Timer: ~" + ScriptStatusPainter.getSecondsTilNextFlick()+"s",
+                            paintArea.x + 10, paintArea.y + 120);
+                }
+                else {
+                    g.drawString(tracker.getStyle().toString() + " LVL: " + formatValue(tracker.getTrainingSkillLvl())
+                            + " XP: " + formatValue(tracker.getTrainingXpGained())
+                            + " TTL: " + formatTime(tracker.getTrainingTTL())
+                            + " XPH: " + formatValue(tracker.getTrainingXPH()),
+                            paintArea.x + 10, paintArea.y + 15);
+
+                    g.drawString("HP LVL: " + tracker.getHpLvl()
+                                    + " XP: " + formatValue(tracker.getHpXpGained())
+                                    + " TTL: " + formatTime(tracker.getHpTTL())
+                                    + " XPH: " + formatValue(tracker.getHpXPH()),
+                            paintArea.x + 10, paintArea.y + 30);
+
+                    g.drawString("Runtime: " + formatTime(tracker.getRunTime()),
+                            paintArea.x + 10, paintArea.y + 45);
+
+                    g.drawString("Status: " + ScriptStatusPainter.getCurrentScriptStatus(),
+                            paintArea.x + 10, paintArea.y + 60);
+
+                    g.drawString("Overload Timer: ~" + ScriptStatusPainter.getOverloadSecondsLeft()+"s",
+                            paintArea.x + 10, paintArea.y + 75);
+
+                    g.drawString("Prayer Flick Timer: ~" + ScriptStatusPainter.getSecondsTilNextFlick()+"s",
+                            paintArea.x + 10, paintArea.y + 90);
+
+                }
+            }
+        }
 
         Point pos = getMouse().getPosition();
         g.drawLine(0, pos.y, 800, pos.y); //horiz line
         g.drawLine(pos.x, 0, pos.x, 500); //vert line
-
-        Rectangle paintArea = paintHandler.getPaintArea();
-
-        g.setColor(new Color(156,156,156));
-        g.fillRect(paintArea.x, paintArea.y, paintArea.width, paintArea.height);
-        g.setColor(new Color(255, 255, 255));
-
-        CombatXPPainter.CombatStyle style = CombatXPPainter.getSingleton(this).getStyle();
-        if(style != null){
-            if(style == CombatXPPainter.CombatStyle.CTRL){
-                paintArea.setBounds(0, 0, 300, 100);
-                g.drawString("ATK" + " LVL: " + formatValue(info.getAtkLvl()) + " XP: "
-                        + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getAtkTTL()) + " XPH: "
-                        + formatValue(info.getTrainingXPH()), paintArea.x + 10, paintArea.y + 15);
-
-                g.drawString("STR" + " LVL: " + formatValue(info.getStrLvl()) + " XP: "
-                        + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getStrTTL()) + " XPH: "
-                        + formatValue(info.getTrainingXPH()), paintArea.x + 10, paintArea.y + 30);
-
-                g.drawString("DEF" + " LVL: " + formatValue(info.getDefLvl()) + " XP: "
-                        + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getDefTTL()) + " XPH: "
-                        + formatValue(info.getTrainingXPH()), paintArea.x + 10, paintArea.y + 45);
-
-                g.drawString("HP LVL: " + formatValue(hpLvl) + " XP: " + formatValue(hpXpGained) + " TTL: "
-                        + formatTime(hpTTL) + " XPH: " + formatValue(hpXPH), paintArea.x + 10, paintArea.y + 60);
-
-                g.drawString("Runtime: " + formatTime(runTime), paintArea.x + 10, paintArea.y + 75);
-
-                g.drawString("Status: " + CombatXPPainter.getSingleton(this).getCurrentScriptStatus(),
-                        paintArea.x + 10, paintArea.y + 90);
-
-                g.drawString("Overload Timer: ~" + CombatXPPainter.getSingleton(this).getOverloadSecondsLeft()+"s",
-                        paintArea.x + 10, paintArea.y + 75);
-            }
-            else{
-                g.drawString(style.toString() + " LVL: " + formatValue(info.getTrainingSkillLvl()) + " XP: "
-                        + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getTrainingSkillTTL())
-                        + " XPH: " + formatValue(info.getTrainingXPH()), paintArea.x + 10, paintArea.y + 15);
-
-                g.drawString("HP LVL: " + formatValue(hpLvl) + " XP: " + formatValue(hpXpGained) + " TTL: "
-                        + formatTime(hpTTL) + " XPH: " + formatValue(hpXPH), paintArea.x + 10, paintArea.y + 30);
-
-                g.drawString("Runtime: " + formatTime(runTime), paintArea.x + 10, paintArea.y + 45);
-
-                g.drawString("Status: " + CombatXPPainter.getSingleton(this).getCurrentScriptStatus(),
-                        paintArea.x + 10, paintArea.y + 60);
-
-                g.drawString("Overload Timer: ~" + CombatXPPainter.getSingleton(this).getOverloadSecondsLeft()+"s",
-                        paintArea.x + 10, paintArea.y + 75);
-            }
-        }
     }
 
+    @SuppressWarnings("deprecation")
     private void setUp(){
         paintHandler = new DraggablePaintHandler();
         this.bot.addMouseListener(paintHandler);
@@ -123,13 +137,11 @@ public class MainScript extends Script implements MessageListener {
         executor.addEdgeToNode(prepNode, activeNode, 1);
         executor.addEdgeToNode(activeNode, activeNode, 1);
 
-
-        startTime = System.currentTimeMillis();
-        getExperienceTracker().start(Skill.HITPOINTS);
-        getExperienceTracker().start(Skill.ATTACK);
-        getExperienceTracker().start(Skill.STRENGTH);
-        getExperienceTracker().start(Skill.DEFENCE);
-        getExperienceTracker().start(Skill.RANGED);
+        tracker = new CombatXPTracker();
+        tracker.exchangeContext(bot);
+        tracker.initializeModule();
+        tracker.setModuleReady();
+        tracker.setCombatStyle();
     }
 
     private String formatTime(final long ms){
@@ -161,10 +173,14 @@ public class MainScript extends Script implements MessageListener {
                 afkNode.setPlayerDied(true);
                 activeNode.setPlayerDied(true);
                 MethodProvider.sleep(5000);
-                stop(false); //if nodes don't catch the death
+                stop(false);
             }
             else if(message.getMessage().contains("Power surge")){
                 log("power surge up");
+            }
+            else if(message.getMessage().contains("You can only drink this potion")){
+                log("outside NMZ");
+                stop(false);
             }
         }
     }

@@ -9,7 +9,7 @@ public class DraggablePaintHandler extends BotMouseListener {
 
     private int xOffset = 0;
     private int yOffset = 0;
-    private Rectangle paintArea = new Rectangle(0, 0, 350, 90);
+    private Rectangle paintArea = new Rectangle(0, 0, 350, 105);
     private boolean movingPaint = false;
 
     @Override

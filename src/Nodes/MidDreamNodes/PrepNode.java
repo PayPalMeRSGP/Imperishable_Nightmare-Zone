@@ -1,18 +1,23 @@
 package Nodes.MidDreamNodes;
 
 import Nodes.ExecutableNode;
-import ScriptClasses.Paint.CombatXPPainter;
+import ScriptClasses.Paint.ScriptStatusPainter;
+import ScriptClasses.Util.Statics;
+import org.osbot.rs07.api.Inventory;
+import org.osbot.rs07.api.Menu;
+import org.osbot.rs07.api.Mouse;
 import org.osbot.rs07.api.map.Position;
+import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.api.ui.Tab;
 import org.osbot.rs07.event.WalkingEvent;
+import org.osbot.rs07.input.mouse.InventorySlotDestination;
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
 import java.util.concurrent.ThreadLocalRandom;
 
 public class PrepNode extends MidDreamNode {
-    private Script hostScriptReference;
-
     private static ExecutableNode singleton = null;
 
     private PrepNode(Script hostScriptReference) {
@@ -28,11 +33,11 @@ public class PrepNode extends MidDreamNode {
 
     @Override
     public int executeNodeAction() throws InterruptedException {
-        CombatXPPainter.getSingleton(hostScriptReference).setCurrentScriptStatus(CombatXPPainter.ScriptStatus.PREPARING);
+        ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.PREPARING);
+        setDoOverload(true);
         if(walkToCorner()){
             handleAbsorptionLvl();
-            handleOverload();
-            guzzleRockCakeTo1();
+            setPlayerHealthTo1();
             turnOnAutoRetaliate();
         }
 
@@ -84,6 +89,47 @@ public class PrepNode extends MidDreamNode {
         return walk;
     }
 
+    private void setPlayerHealthTo1() throws InterruptedException {
+        int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
+
+        Inventory inv = hostScriptReference.getInventory();
+        if(currentHealth > 50 && doesPlayerHaveOverloadsLeft()){
+            inv.interact(Statics.DRINK, Statics.OVERLOAD_POTION_1_ID, Statics.OVERLOAD_POTION_2_ID,
+                    Statics.OVERLOAD_POTION_3_ID, Statics.OVERLOAD_POTION_4_ID);
+            ScriptStatusPainter.setOverloadTimer();
+            //wait out overload dmg, DO NOT GUZZLE while taking overload dmg, may result in overload dmg player killing player.
+            int estimatedHealthAfterOverload = currentHealth - 51;
+            new ConditionalSleep(7000, 500){
+                @Override
+                public boolean condition() throws InterruptedException {
+                    int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
+                    int difference = Math.abs(estimatedHealthAfterOverload - currentHealth);
+                    return difference < 5;
+                }
+            }.sleep();
+        }
+        while(currentHealth > 1){
+            guzzleRockCake();
+            currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
+            Statics.hostScriptReference.log("guzzling rockcake... hp: " + currentHealth);
+            MethodProvider.sleep(Statics.randomNormalDist(Statics.RS_GAME_TICK_MS, 60.0));
+        }
+    }
+
+    private void guzzleRockCake(){
+        Inventory inv = hostScriptReference.getInventory();
+        Mouse mouse = hostScriptReference.getMouse();
+        Menu rockCakeMenu = hostScriptReference.getMenuAPI();
+        if(inv.contains(Statics.DWARVEN_ROCK_CAKE_ID)){
+            int rockCakeInvSlot = inv.getSlot(Statics.DWARVEN_ROCK_CAKE_ID);
+            InventorySlotDestination rockCakeDest = new InventorySlotDestination(hostScriptReference.getBot(), rockCakeInvSlot);
+            mouse.click(rockCakeDest, true);
+            if(rockCakeMenu.isOpen()){
+                rockCakeMenu.selectAction(Statics.GUZZLE);
+            }
+        }
+
+    }
 
     private void turnOnAutoRetaliate(){
         hostScriptReference.getTabs().open(Tab.ATTACK);

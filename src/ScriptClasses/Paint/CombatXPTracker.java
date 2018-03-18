@@ -4,97 +4,70 @@ import org.osbot.rs07.api.ui.EquipmentSlot;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.API;
 
-import java.util.Timer;
-import java.util.TimerTask;
+public class CombatXPTracker extends API{
 
-import static ScriptClasses.Util.Statics.hostScriptReference;
-
-public class CombatXPPainter extends API{
-
-    private enum CombatStyle {
+    public enum CombatStyle {
         ATK, STR, DEF, CTRL, RNG
     }
     private CombatStyle style;
+    private long startTime;
+    private boolean moduleReady;
 
-
-    //for paint timer of overload
-    private Timer overloadTimer;
-    private int overloadSecondsLeft;
-
-    //for paint status
-    private enum ScriptStatus {
-        PREPARING, AFKING, OVERLOADING, ABSORPTIONS, GUZZLING_ROCKCAKES, RAPID_HEAL_FLICK, SPECIAL_ATK;
-    }
-
-    private static ScriptStatus currentScriptStatus;
-
-
+    @SuppressWarnings("deprecation")
     @Override
     public void initializeModule() {
         exchangeContext(getBot());
+        startTime = System.currentTimeMillis();
+        getExperienceTracker().start(Skill.HITPOINTS);
+        getExperienceTracker().start(Skill.ATTACK);
+        getExperienceTracker().start(Skill.STRENGTH);
+        getExperienceTracker().start(Skill.DEFENCE);
+        getExperienceTracker().start(Skill.RANGED);
     }
 
-    private CombatXPPainter(){}
+    public void setModuleReady() {
+        this.moduleReady = true;
+    }
 
-    //call in onloop
+    //call in onloop, or onPaint
     public void setCombatStyle(){
-        int s = hostScriptReference.getConfigs().get(43);
-        String equippedWeapon = getEquipment().getItemInSlot(EquipmentSlot.WEAPON.slot).toString();
-        boolean isRanging = equippedWeapon.contains("bow") || equippedWeapon.contains("blowpipe")
-                || equippedWeapon.contains("throwing") || equippedWeapon.contains("dart")
-                || equippedWeapon.contains("knife");
-        if(isRanging){
-            style =  CombatStyle.RNG;
-            return;
-        }
-
-        switch (s){
-            case 0:
-                style = CombatStyle.ATK;
-                break;
-            case 1:
-                style = CombatStyle.STR;
-                break;
-            case 2:
-                style = CombatStyle.CTRL;
-                break;
-            case 3:
-                style = CombatStyle.DEF;
-                break;
-            default:
-                hostScriptReference.log("WARNING: hit default case in setCombatStyle switch statement");
-        }
-    }
-
-    public void setOverloadTimer(){
-        overloadTimer = new Timer();
-        overloadSecondsLeft = 300;
-        overloadTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                overloadSecondsLeft--;
-                if(overloadSecondsLeft <= 0){
-                    overloadTimer.cancel();
-                }
+        if(moduleReady){
+            int s = getConfigs().get(43);
+            String equippedWeapon = getEquipment().getItemInSlot(EquipmentSlot.WEAPON.slot).toString();
+            boolean isRanging = equippedWeapon.contains("bow") || equippedWeapon.contains("blowpipe")
+                    || equippedWeapon.contains("throwing") || equippedWeapon.contains("dart")
+                    || equippedWeapon.contains("knife");
+            if(isRanging){
+                style =  CombatStyle.RNG;
+                return;
             }
-        }, 0, 1000);
 
-    }
+            switch (s){
+                case 0:
+                    style = CombatStyle.ATK;
+                    break;
+                case 1:
+                    style = CombatStyle.STR;
+                    break;
+                case 2:
+                    style = CombatStyle.CTRL;
+                    break;
+                case 3:
+                    style = CombatStyle.DEF;
+                    break;
+                default:
+                    log("WARNING: hit default case in setCombatStyle switch statement");
+            }
+        }
 
-    public int getOverloadSecondsLeft() {
-        return overloadSecondsLeft;
-    }
-
-    public ScriptStatus getCurrentScriptStatus() {
-        return currentScriptStatus;
-    }
-
-    public void setCurrentScriptStatus(ScriptStatus currentScriptStatus) {
-        CombatXPPainter.currentScriptStatus = currentScriptStatus;
     }
 
     public CombatStyle getStyle() {
         return style;
+    }
+
+    public long getRunTime(){
+        return System.currentTimeMillis() - startTime;
     }
 
     //for not using controlled style
@@ -164,19 +137,19 @@ public class CombatXPPainter extends API{
     }
 
     //Levels
-    private int getAtkLvl() {
+    public int getAtkLvl() {
         return getSkills().getStatic(Skill.ATTACK);
     }
 
-    private int getStrLvl() {
+    public int getStrLvl() {
         return getSkills().getStatic(Skill.STRENGTH);
     }
 
-    private int getDefLvl() {
+    public int getDefLvl() {
         return getSkills().getStatic(Skill.STRENGTH);
     }
 
-    private int getRngLvl(){
+    public int getRngLvl(){
         return getSkills().getStatic(Skill.RANGED);
     }
 
@@ -185,19 +158,19 @@ public class CombatXPPainter extends API{
     }
 
     //XP gained
-    private int getAtkXpGained(){
+    public int getAtkXpGained(){
         return getExperienceTracker().getGainedXP(Skill.ATTACK);
     }
 
-    private int getStrXpGained(){
+    public int getStrXpGained(){
         return getExperienceTracker().getGainedXP(Skill.STRENGTH);
     }
 
-    private int getDefXpGained(){
+    public int getDefXpGained(){
         return getExperienceTracker().getGainedXP(Skill.DEFENCE);
     }
 
-    private int getRngXpGained(){
+    public int getRngXpGained(){
         return getExperienceTracker().getGainedXP(Skill.RANGED);
     }
 
@@ -206,19 +179,19 @@ public class CombatXPPainter extends API{
     }
 
     //Time to Level
-    private long getAtkTTL() {
+    public long getAtkTTL() {
         return getExperienceTracker().getTimeToLevel(Skill.ATTACK);
     }
 
-    private long getStrTTL() {
+    public long getStrTTL() {
         return getExperienceTracker().getTimeToLevel(Skill.STRENGTH);
     }
 
-    private long getDefTTL() {
+    public long getDefTTL() {
         return getExperienceTracker().getTimeToLevel(Skill.DEFENCE);
     }
 
-    private long getRngTTL() {
+    public long getRngTTL() {
         return getExperienceTracker().getTimeToLevel(Skill.RANGED);
     }
 
@@ -227,19 +200,19 @@ public class CombatXPPainter extends API{
     }
 
     //Xp per Hr
-    private int getAtkXPH(){
+    public int getAtkXPH(){
         return getExperienceTracker().getGainedXPPerHour(Skill.ATTACK);
     }
 
-    private int getStrXPH(){
+    public int getStrXPH(){
         return getExperienceTracker().getGainedXPPerHour(Skill.STRENGTH);
     }
 
-    private int getDefXPH(){
+    public int getDefXPH(){
         return getExperienceTracker().getGainedXPPerHour(Skill.DEFENCE);
     }
 
-    private int getRngXPH(){
+    public int getRngXPH(){
         return getExperienceTracker().getGainedXPPerHour(Skill.RANGED);
     }
 
