@@ -1,4 +1,4 @@
-package ScriptClasses;
+package ScriptClasses.Util;
 
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.script.Script;
@@ -12,6 +12,7 @@ public class Statics {
     //onMessage triggers
     public final static String OVERLOAD_DEPLETED_MSG = "The effects of overload have worn off";
     public final static String DREAM_OVER_MSG = "You wake up feeling refreshed";
+    public final static String POWER_SURGE = "Power surge";
 
     public static final int RS_GAME_TICK_MS = 603;
     //items

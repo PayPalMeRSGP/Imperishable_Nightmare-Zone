@@ -1,11 +1,10 @@
 package ScriptClasses.Paint;
 
-import org.osbot.rs07.api.Equipment;
 import org.osbot.rs07.api.ui.EquipmentSlot;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.Script;
 
-import static ScriptClasses.Statics.hostScriptReference;
+import static ScriptClasses.Util.Statics.hostScriptReference;
 
 public class PaintInfo {
     //for ctrl atk style. You need these variables separately
@@ -23,19 +22,18 @@ public class PaintInfo {
     //these can be used in general to get the xp rate and gain of a combat skill.
     // if using controlled atk/str/def/rng will have the same xp gain
     private int trainingXpGained = 0;
-    private int traiingXPH = 0;
+    private int trainingXPH = 0;
 
     private int hpLvl = 0;
     private int hpXpGained = 0;
     private long hpTTL = 0;
     private int hpXPH = 0;
 
-    //non-xp
     public enum ScriptStatus {
         PREPARING, AFKING, OVERLOADING, ABSORPTIONS, GUZZLING_ROCKCAKES, RAPID_HEAL_FLICK, SPECIAL_ATK;
     }
     public enum CombatStyle {
-        ATK, STR, DEF, CTRL, RNG;
+        ATK, STR, DEF, CTRL, RNG
     }
     private CombatStyle style;
     private ScriptStatus currentScriptStatus;
@@ -55,13 +53,13 @@ public class PaintInfo {
                     singleton.trainingSkillLvl = hostScriptReference.getSkills().getStatic(Skill.ATTACK);
                     singleton.trainingXpGained = hostScriptReference.getExperienceTracker().getGainedXP(Skill.ATTACK);
                     singleton.trainingSkillTTL = hostScriptReference.getExperienceTracker().getTimeToLevel(Skill.ATTACK);
-                    singleton.traiingXPH = hostScriptReference.getExperienceTracker().getGainedXPPerHour(Skill.ATTACK);
+                    singleton.trainingXPH = hostScriptReference.getExperienceTracker().getGainedXPPerHour(Skill.ATTACK);
                     break;
                 case STR:
                     singleton.trainingSkillLvl = hostScriptReference.getSkills().getStatic(Skill.STRENGTH);
                     singleton.trainingXpGained = hostScriptReference.getExperienceTracker().getGainedXP(Skill.STRENGTH);
                     singleton.trainingSkillTTL = hostScriptReference.getExperienceTracker().getTimeToLevel(Skill.STRENGTH);
-                    singleton.traiingXPH = hostScriptReference.getExperienceTracker().getGainedXPPerHour(Skill.STRENGTH);
+                    singleton.trainingXPH = hostScriptReference.getExperienceTracker().getGainedXPPerHour(Skill.STRENGTH);
                     break;
                 case CTRL:
                     singleton.atkLvl = hostScriptReference.getSkills().getStatic(Skill.ATTACK);
@@ -71,19 +69,19 @@ public class PaintInfo {
                     singleton.atkTTL = hostScriptReference.getExperienceTracker().getTimeToLevel(Skill.ATTACK);
                     singleton.strTTL = hostScriptReference.getExperienceTracker().getTimeToLevel(Skill.STRENGTH);
                     singleton.defTTL = hostScriptReference.getExperienceTracker().getTimeToLevel(Skill.DEFENCE);
-                    singleton.traiingXPH = hostScriptReference.getExperienceTracker().getGainedXPPerHour(Skill.ATTACK);
+                    singleton.trainingXPH = hostScriptReference.getExperienceTracker().getGainedXPPerHour(Skill.ATTACK);
                     break;
                 case DEF:
                     singleton.trainingSkillLvl = hostScriptReference.getSkills().getStatic(Skill.DEFENCE);
                     singleton.trainingXpGained = hostScriptReference.getExperienceTracker().getGainedXP(Skill.DEFENCE);
                     singleton.trainingSkillTTL = hostScriptReference.getExperienceTracker().getTimeToLevel(Skill.DEFENCE);
-                    singleton.traiingXPH = hostScriptReference.getExperienceTracker().getGainedXPPerHour(Skill.DEFENCE);
+                    singleton.trainingXPH = hostScriptReference.getExperienceTracker().getGainedXPPerHour(Skill.DEFENCE);
                     break;
                 case RNG:
                     singleton.trainingSkillLvl = hostScriptReference.getSkills().getStatic(Skill.RANGED);
                     singleton.trainingXpGained = hostScriptReference.getExperienceTracker().getGainedXP(Skill.RANGED);
                     singleton.trainingSkillTTL = hostScriptReference.getExperienceTracker().getTimeToLevel(Skill.RANGED);
-                    singleton.traiingXPH = hostScriptReference.getExperienceTracker().getGainedXPPerHour(Skill.RANGED);
+                    singleton.trainingXPH = hostScriptReference.getExperienceTracker().getGainedXPPerHour(Skill.RANGED);
                     break;
 
             }
@@ -99,13 +97,12 @@ public class PaintInfo {
     public static void setCombatStyle(){
         if(singleton != null){
             int s = hostScriptReference.getConfigs().get(43);
-            Equipment equipment = hostScriptReference.getEquipment();
-            String weaponSlotItem = equipment.getItemInSlot(EquipmentSlot.WEAPON.slot).toString();
-            boolean isRanging = weaponSlotItem.contains("bow") || weaponSlotItem.contains("blowpipe");
+            String equippedWeapon = hostScriptReference.getEquipment().getItemInSlot(EquipmentSlot.WEAPON.slot).toString();
+            boolean isRanging = equippedWeapon.contains("bow") || equippedWeapon.contains("blowpipe")
+                    || equippedWeapon.contains("throwing") || equippedWeapon.contains("dart")
+                    || equippedWeapon.contains("knife");
             if(isRanging){
-                if(singleton != null){
-                    singleton.style =  CombatStyle.RNG;
-                }
+                singleton.style =  CombatStyle.RNG;
                 return;
             }
 
@@ -176,8 +173,8 @@ public class PaintInfo {
         return trainingSkillTTL;
     }
 
-    public int getTraiingXPH() {
-        return traiingXPH;
+    public int getTrainingXPH() {
+        return trainingXPH;
     }
 
     public int getHpLvl() {

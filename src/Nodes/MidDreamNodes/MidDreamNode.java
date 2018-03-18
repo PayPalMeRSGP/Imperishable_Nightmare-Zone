@@ -2,13 +2,11 @@ package Nodes.MidDreamNodes;
 
 import Nodes.ExecutableNode;
 import ScriptClasses.Paint.PaintInfo;
-import ScriptClasses.Statics;
+import ScriptClasses.Util.SpecialAttackWeapons;
+import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.*;
 import org.osbot.rs07.api.map.Position;
-import org.osbot.rs07.api.ui.PrayerButton;
-import org.osbot.rs07.api.ui.RS2Widget;
-import org.osbot.rs07.api.ui.Skill;
-import org.osbot.rs07.api.ui.Tab;
+import org.osbot.rs07.api.ui.*;
 import org.osbot.rs07.event.WalkingEvent;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
@@ -30,6 +28,7 @@ public abstract class MidDreamNode implements ExecutableNode {
     private boolean doOverload;
     private boolean doCameraRotation;
     private boolean noPrayer;
+    boolean powerSurgeActive;
 
 
     MidDreamNode(Script hostScriptReference){
@@ -94,7 +93,7 @@ public abstract class MidDreamNode implements ExecutableNode {
 
     boolean handleOverload() throws InterruptedException {
         boolean interacted = false;
-        if(doOverload && doesPlayerHaveOverloadsLeft() && doesPlayerHaveAbsorptionsLeft()){
+        if(doOverload && doesPlayerHaveOverloadsLeft() && getAbsorptionLvl() > 300){
             PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.OVERLOADING);
             openInventoryTab();
             Inventory inv = hostScriptReference.getInventory();
@@ -172,15 +171,7 @@ public abstract class MidDreamNode implements ExecutableNode {
     }
 
     void handleSpecialAttack() throws InterruptedException {
-        Combat combat = hostScriptReference.getCombat();
-        if(combat.getSpecialPercentage() == 100){
-            if(hostScriptReference.getTabs().open(Tab.ATTACK)){ //meant to add a delay after switching to attack tab
-                PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.SPECIAL_ATK);
-                MethodProvider.sleep(Statics.randomNormalDist(1200, 200));
-                combat.toggleSpecialAttack(true);
-            }
 
-        }
     }
 
     private boolean walkToCorner() throws InterruptedException {

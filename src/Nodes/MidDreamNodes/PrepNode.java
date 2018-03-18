@@ -1,7 +1,8 @@
-package Nodes;
+package Nodes.MidDreamNodes;
 
+import Nodes.ExecutableNode;
 import ScriptClasses.Paint.PaintInfo;
-import ScriptClasses.Statics;
+import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.Inventory;
 import org.osbot.rs07.api.Menu;
 import org.osbot.rs07.api.Mouse;
@@ -17,7 +18,7 @@ import org.osbot.rs07.utility.ConditionalSleep;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-public class PrepNode implements ExecutableNode{
+public class PrepNode implements ExecutableNode {
     private Script hostScriptReference;
 
     private static ExecutableNode singleton = null;

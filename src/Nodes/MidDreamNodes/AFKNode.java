@@ -2,7 +2,7 @@ package Nodes.MidDreamNodes;
 
 import Nodes.ExecutableNode;
 import ScriptClasses.Paint.PaintInfo;
-import ScriptClasses.Statics;
+import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.ui.*;
 import org.osbot.rs07.script.Script;
 
