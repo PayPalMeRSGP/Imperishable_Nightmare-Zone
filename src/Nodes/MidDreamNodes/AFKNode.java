@@ -1,7 +1,7 @@
 package Nodes.MidDreamNodes;
 
 import Nodes.ExecutableNode;
-import ScriptClasses.Paint.PaintInfo;
+import ScriptClasses.Paint.CombatXPPainter;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.ui.*;
 import org.osbot.rs07.script.Script;
@@ -39,7 +39,7 @@ public class AFKNode extends MidDreamNode {
             guzzleRockCakeTo1();
         }
         hostScriptReference.getMouse().moveOutsideScreen();
-        PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.AFKING);
+        CombatXPPainter.getSingleton(hostScriptReference).setCurrentScriptStatus(CombatXPPainter.ScriptStatus.AFKING);
         return (int) Statics.randomNormalDist(2000, 1000);
     }
 

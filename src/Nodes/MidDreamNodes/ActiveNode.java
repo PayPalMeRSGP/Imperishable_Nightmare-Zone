@@ -1,7 +1,7 @@
 package Nodes.MidDreamNodes;
 
 import Nodes.ExecutableNode;
-import ScriptClasses.Paint.PaintInfo;
+import ScriptClasses.Paint.CombatXPPainter;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.Prayer;
 import org.osbot.rs07.api.ui.*;
@@ -47,14 +47,14 @@ public class ActiveNode extends MidDreamNode {
             hostScriptReference.getMouse().moveOutsideScreen();
         }
 
-        PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.AFKING);
+        CombatXPPainter.getSingleton(hostScriptReference).setCurrentScriptStatus(CombatXPPainter.ScriptStatus.AFKING);
         return (int) Statics.randomNormalDist(1000, 500);
     }
 
 
     private void rapidHealFlick() throws InterruptedException {
         if(doPrayerFlick){
-            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.RAPID_HEAL_FLICK);
+            CombatXPPainter.getSingleton(hostScriptReference).setCurrentScriptStatus(CombatXPPainter.ScriptStatus.RAPID_HEAL_FLICK);
             int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
             //(currentHealth <= 49 || !doesPlayerHaveOverloadsLeft()) player still guzzles to 1 if over 49 and overloads are not in inventory
             if(currentHealth > 1 && (currentHealth <= 49 || !doesPlayerHaveOverloadsLeft())){

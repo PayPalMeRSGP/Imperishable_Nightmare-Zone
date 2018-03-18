@@ -1,8 +1,7 @@
 package Nodes.MidDreamNodes;
 
 import Nodes.ExecutableNode;
-import ScriptClasses.Paint.PaintInfo;
-import ScriptClasses.Util.SpecialAttackWeapons;
+import ScriptClasses.Paint.CombatXPPainter;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.*;
 import org.osbot.rs07.api.map.Position;
@@ -61,7 +60,7 @@ public abstract class MidDreamNode implements ExecutableNode {
         }
         //absorptionLvl >= 0 is because getAbsorptionLvl returns -1 in error cases, such as the widget not being visible.
         if(absorptionLvl < absorptionMinLimit && absorptionLvl >= 0){
-            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.ABSORPTIONS);
+            CombatXPPainter.getSingleton(hostScriptReference).setCurrentScriptStatus(CombatXPPainter.ScriptStatus.ABSORPTIONS);
             openInventoryTab();
             while(absorptionLvl < absorptionMinLimit && doesPlayerHaveAbsorptionsLeft()){
                 inv.interact(DRINK, Statics.ABSORPTION_POTION_1_ID, Statics.ABSORPTION_POTION_2_ID,
@@ -94,11 +93,15 @@ public abstract class MidDreamNode implements ExecutableNode {
     boolean handleOverload() throws InterruptedException {
         boolean interacted = false;
         if(doOverload && doesPlayerHaveOverloadsLeft() && getAbsorptionLvl() > 300){
-            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.OVERLOADING);
+            CombatXPPainter.getSingleton(hostScriptReference).setCurrentScriptStatus(CombatXPPainter.ScriptStatus.OVERLOADING);
             openInventoryTab();
             Inventory inv = hostScriptReference.getInventory();
             interacted = inv.interact(DRINK, Statics.OVERLOAD_POTION_1_ID, Statics.OVERLOAD_POTION_2_ID,
                     Statics.OVERLOAD_POTION_3_ID, Statics.OVERLOAD_POTION_4_ID);
+
+            if(interacted){
+                CombatXPPainter.setOverloadTimer();
+            }
 
             //while hp is being depleted from overload it is possible to lose alot of absorptions
             Prayer prayer = Statics.hostScriptReference.getPrayer();
@@ -138,7 +141,7 @@ public abstract class MidDreamNode implements ExecutableNode {
             return;
         }
         while(currentHealth > 1){
-            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.GUZZLING_ROCKCAKES);
+            CombatXPPainter.getSingleton(hostScriptReference).setCurrentScriptStatus(CombatXPPainter.ScriptStatus.GUZZLING_ROCKCAKES);
             Inventory inv = hostScriptReference.getInventory();
             inv.interact(GUZZLE, Statics.DWARVEN_ROCK_CAKE_ID);
             MethodProvider.sleep(Statics.randomNormalDist(Statics.RS_GAME_TICK_MS, 60.0));

@@ -4,7 +4,7 @@ import Nodes.MidDreamNodes.AFKNode;
 import Nodes.MidDreamNodes.ActiveNode;
 import Nodes.MidDreamNodes.PrepNode;
 import ScriptClasses.Paint.DraggablePaintHandler;
-import ScriptClasses.Paint.PaintInfo;
+import ScriptClasses.Paint.CombatXPPainter;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.api.ui.Skill;
@@ -18,7 +18,7 @@ import java.awt.*;
 @ScriptManifest(author = "PayPalMeRSGP", name = MainScript.BUILD_NUM + " " + MainScript.SCRIPT_NAME, info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MessageListener {
     static final String SCRIPT_NAME = "Imperishable Nightmare-Zone";
-    static final int BUILD_NUM = 0;
+    static final int BUILD_NUM = 1;
 
     private long startTime;
 
@@ -34,7 +34,7 @@ public class MainScript extends Script implements MessageListener {
 
     @Override
     public int onLoop() throws InterruptedException {
-        PaintInfo.setCombatStyle();
+        CombatXPPainter.setCombatStyle();
         return executor.executeNodeThenTraverse();
     }
 
@@ -43,7 +43,7 @@ public class MainScript extends Script implements MessageListener {
         super.onPaint(g);
         long runTime = System.currentTimeMillis() - startTime;
 
-        PaintInfo info = PaintInfo.getSingleton(this);
+        CombatXPPainter info = CombatXPPainter.getSingleton(this);
 
         int hpXpGained = info.getHpXpGained();
         int hpXPH = info.getHpXPH();
@@ -60,9 +60,9 @@ public class MainScript extends Script implements MessageListener {
         g.fillRect(paintArea.x, paintArea.y, paintArea.width, paintArea.height);
         g.setColor(new Color(255, 255, 255));
 
-        PaintInfo.CombatStyle style = PaintInfo.getSingleton(this).getStyle();
+        CombatXPPainter.CombatStyle style = CombatXPPainter.getSingleton(this).getStyle();
         if(style != null){
-            if(style == PaintInfo.CombatStyle.CTRL){
+            if(style == CombatXPPainter.CombatStyle.CTRL){
                 paintArea.setBounds(0, 0, 300, 100);
                 g.drawString("ATK" + " LVL: " + formatValue(info.getAtkLvl()) + " XP: "
                         + formatValue(info.getTrainingXpGained()) + " TTL: " + formatTime(info.getAtkTTL()) + " XPH: "
@@ -79,8 +79,13 @@ public class MainScript extends Script implements MessageListener {
                 g.drawString("HP LVL: " + formatValue(hpLvl) + " XP: " + formatValue(hpXpGained) + " TTL: "
                         + formatTime(hpTTL) + " XPH: " + formatValue(hpXPH), paintArea.x + 10, paintArea.y + 60);
 
-                g.drawString("runtime: " + formatTime(runTime), paintArea.x + 10, paintArea.y + 75);
-                g.drawString("status: " + PaintInfo.getSingleton(this).getCurrentScriptStatus(), paintArea.x + 10, paintArea.y + 90);
+                g.drawString("Runtime: " + formatTime(runTime), paintArea.x + 10, paintArea.y + 75);
+
+                g.drawString("Status: " + CombatXPPainter.getSingleton(this).getCurrentScriptStatus(),
+                        paintArea.x + 10, paintArea.y + 90);
+
+                g.drawString("Overload Timer: ~" + CombatXPPainter.getSingleton(this).getOverloadSecondsLeft()+"s",
+                        paintArea.x + 10, paintArea.y + 75);
             }
             else{
                 g.drawString(style.toString() + " LVL: " + formatValue(info.getTrainingSkillLvl()) + " XP: "
@@ -90,8 +95,13 @@ public class MainScript extends Script implements MessageListener {
                 g.drawString("HP LVL: " + formatValue(hpLvl) + " XP: " + formatValue(hpXpGained) + " TTL: "
                         + formatTime(hpTTL) + " XPH: " + formatValue(hpXPH), paintArea.x + 10, paintArea.y + 30);
 
-                g.drawString("runtime: " + formatTime(runTime), paintArea.x + 10, paintArea.y + 45);
-                g.drawString("status: " + PaintInfo.getSingleton(this).getCurrentScriptStatus(), paintArea.x + 10, paintArea.y + 60);
+                g.drawString("Runtime: " + formatTime(runTime), paintArea.x + 10, paintArea.y + 45);
+
+                g.drawString("Status: " + CombatXPPainter.getSingleton(this).getCurrentScriptStatus(),
+                        paintArea.x + 10, paintArea.y + 60);
+
+                g.drawString("Overload Timer: ~" + CombatXPPainter.getSingleton(this).getOverloadSecondsLeft()+"s",
+                        paintArea.x + 10, paintArea.y + 75);
             }
         }
     }
