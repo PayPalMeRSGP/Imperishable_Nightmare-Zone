@@ -1,8 +1,8 @@
 package Nodes.MidDreamNodes;
 
 import Nodes.ExecutableNode;
-import ScriptClasses.Paint.PaintInfo;
-import ScriptClasses.Util.SpecialAttackWeapons;
+import ScriptClasses.Paint.CombatXPTracker;
+import ScriptClasses.Paint.ScriptStatusPainter;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.*;
 import org.osbot.rs07.api.map.Position;
@@ -60,14 +60,15 @@ public abstract class MidDreamNode implements ExecutableNode {
             }
         }
         //absorptionLvl >= 0 is because getAbsorptionLvl returns -1 in error cases, such as the widget not being visible.
-        if(absorptionLvl < absorptionMinLimit && absorptionLvl >= 0){
-            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.ABSORPTIONS);
+        if(absorptionLvl < absorptionMinLimit && absorptionLvl >= -1){
+            ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.ABSORPTIONS);
             openInventoryTab();
             while(absorptionLvl < absorptionMinLimit && doesPlayerHaveAbsorptionsLeft()){
                 inv.interact(DRINK, Statics.ABSORPTION_POTION_1_ID, Statics.ABSORPTION_POTION_2_ID,
                         Statics.ABSORPTION_POTION_3_ID, Statics.ABSORPTION_POTION_4_ID);
-                absorptionLvl = getAbsorptionLvl();
                 MethodProvider.sleep(Statics.randomNormalDist(Statics.RS_GAME_TICK_MS, 60.0));
+                absorptionLvl = getAbsorptionLvl();
+
             }
             if(noPrayer){
                 this.absorptionMinLimit = ThreadLocalRandom.current().nextInt(400, 600);
@@ -93,12 +94,16 @@ public abstract class MidDreamNode implements ExecutableNode {
 
     boolean handleOverload() throws InterruptedException {
         boolean interacted = false;
-        if(doOverload && doesPlayerHaveOverloadsLeft() && getAbsorptionLvl() > 300){
-            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.OVERLOADING);
+        if(doOverload && doesPlayerHaveOverloadsLeft()){
+            ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.OVERLOADING);
             openInventoryTab();
             Inventory inv = hostScriptReference.getInventory();
             interacted = inv.interact(DRINK, Statics.OVERLOAD_POTION_1_ID, Statics.OVERLOAD_POTION_2_ID,
                     Statics.OVERLOAD_POTION_3_ID, Statics.OVERLOAD_POTION_4_ID);
+
+            if(interacted){
+                ScriptStatusPainter.setOverloadTimer();
+            }
 
             //while hp is being depleted from overload it is possible to lose alot of absorptions
             Prayer prayer = Statics.hostScriptReference.getPrayer();
@@ -134,11 +139,11 @@ public abstract class MidDreamNode implements ExecutableNode {
 
     void guzzleRockCakeTo1() throws InterruptedException {
         int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
-        if(currentHealth > 50){
+        if(currentHealth > 50 || doOverload){
             return;
         }
         while(currentHealth > 1){
-            PaintInfo.getSingleton(hostScriptReference).setCurrentScriptStatus(PaintInfo.ScriptStatus.GUZZLING_ROCKCAKES);
+            ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.GUZZLING_ROCKCAKES);
             Inventory inv = hostScriptReference.getInventory();
             inv.interact(GUZZLE, Statics.DWARVEN_ROCK_CAKE_ID);
             MethodProvider.sleep(Statics.randomNormalDist(Statics.RS_GAME_TICK_MS, 60.0));
