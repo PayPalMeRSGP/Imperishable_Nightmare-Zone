@@ -15,6 +15,7 @@ import org.osbot.rs07.script.ScriptManifest;
 
 import java.awt.*;
 
+@SuppressWarnings("unused")
 @ScriptManifest(author = "PayPalMeRSGP", name = MainScript.BUILD_NUM + " " + MainScript.SCRIPT_NAME, info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MessageListener {
     static final String SCRIPT_NAME = "Imperishable Nightmare-Zone";
@@ -23,7 +24,6 @@ public class MainScript extends Script implements MessageListener {
     private GraphBasedNodeExecutor executor;
     private DraggablePaintHandler paintHandler;
     private CombatXPTracker tracker;
-    private Rectangle paintArea;
 
     @Override
     public void onStart() throws InterruptedException {
@@ -41,7 +41,7 @@ public class MainScript extends Script implements MessageListener {
     @Override
     public void onPaint(Graphics2D g) {
         super.onPaint(g);
-        paintArea = paintHandler.getPaintArea();
+        Rectangle paintArea = paintHandler.getPaintArea();
         g.setColor(new Color(156,156,156, 127));
         g.fillRect(paintArea.x, paintArea.y, paintArea.width, paintArea.height);
 

@@ -7,7 +7,7 @@ public class ScriptStatusPainter {
     //for paint status
     private static ScriptStatus currentScriptStatus;
     public enum ScriptStatus {
-        PREPARING, AFKING, OVERLOADING, ABSORPTIONS, GUZZLING_ROCKCAKES, RAPID_HEAL_FLICK, SPECIAL_ATK;
+        PREPARING, AFKING, OVERLOADING, ABSORPTIONS, GUZZLING_ROCKCAKES, RAPID_HEAL_FLICK, SPECIAL_ATK
     }
 
     public static void setCurrentScriptStatus(ScriptStatus currentScriptStatus) {

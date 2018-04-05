@@ -6,11 +6,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class GraphBasedNodeExecutor {
+class GraphBasedNodeExecutor {
     private class NodeEdge {
-        ExecutableNode u; //source node
-        ExecutableNode v; //edge to some other node
-        int edgeExecutionWeight; //how often do we randomly traverse to this node, higher = more frequent. Relative to edgeExecutionWeights of sibling nodes.
+        final ExecutableNode u; //source node
+        final ExecutableNode v; //edge to some other node
+        final int edgeExecutionWeight; //how often do we randomly traverse to this node, higher = more frequent. Relative to edgeExecutionWeights of sibling nodes.
         //ex: if node A had outgoing edges with weights 2, 3, 5. Then edge with weight 2 will be executed 20% (because 2/(2+3+5)) of the time, 3 -> 30%, and 5 -> 50%.
 
         NodeEdge(ExecutableNode u, ExecutableNode v, int edgeExecutionWeight) {
@@ -20,7 +20,7 @@ public class GraphBasedNodeExecutor {
         }
     }
 
-    private HashMap<ExecutableNode, LinkedList<NodeEdge>> adjMap; //think of this as an adjacency list
+    private final HashMap<ExecutableNode, LinkedList<NodeEdge>> adjMap; //think of this as an adjacency list
     private ExecutableNode current; //the current node to execute inside onLoop
 
     public GraphBasedNodeExecutor(ExecutableNode startingNode){

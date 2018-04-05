@@ -145,11 +145,11 @@ public class CombatXPTracker extends API{
         return getSkills().getStatic(Skill.STRENGTH);
     }
 
-    public int getDefLvl() {
+    private int getDefLvl() {
         return getSkills().getStatic(Skill.STRENGTH);
     }
 
-    public int getRngLvl(){
+    private int getRngLvl(){
         return getSkills().getStatic(Skill.RANGED);
     }
 
@@ -158,19 +158,19 @@ public class CombatXPTracker extends API{
     }
 
     //XP gained
-    public int getAtkXpGained(){
+    private int getAtkXpGained(){
         return getExperienceTracker().getGainedXP(Skill.ATTACK);
     }
 
-    public int getStrXpGained(){
+    private int getStrXpGained(){
         return getExperienceTracker().getGainedXP(Skill.STRENGTH);
     }
 
-    public int getDefXpGained(){
+    private int getDefXpGained(){
         return getExperienceTracker().getGainedXP(Skill.DEFENCE);
     }
 
-    public int getRngXpGained(){
+    private int getRngXpGained(){
         return getExperienceTracker().getGainedXP(Skill.RANGED);
     }
 
@@ -191,7 +191,7 @@ public class CombatXPTracker extends API{
         return getExperienceTracker().getTimeToLevel(Skill.DEFENCE);
     }
 
-    public long getRngTTL() {
+    private long getRngTTL() {
         return getExperienceTracker().getTimeToLevel(Skill.RANGED);
     }
 
@@ -200,19 +200,19 @@ public class CombatXPTracker extends API{
     }
 
     //Xp per Hr
-    public int getAtkXPH(){
+    private int getAtkXPH(){
         return getExperienceTracker().getGainedXPPerHour(Skill.ATTACK);
     }
 
-    public int getStrXPH(){
+    private int getStrXPH(){
         return getExperienceTracker().getGainedXPPerHour(Skill.STRENGTH);
     }
 
-    public int getDefXPH(){
+    private int getDefXPH(){
         return getExperienceTracker().getGainedXPPerHour(Skill.DEFENCE);
     }
 
-    public int getRngXPH(){
+    private int getRngXPH(){
         return getExperienceTracker().getGainedXPPerHour(Skill.RANGED);
     }
 

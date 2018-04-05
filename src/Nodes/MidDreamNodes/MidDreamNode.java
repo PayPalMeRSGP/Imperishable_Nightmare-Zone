@@ -19,7 +19,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public abstract class MidDreamNode implements ExecutableNode {
     private final static String DRINK = "Drink";
     private final static String GUZZLE = "Guzzle";
-    Script hostScriptReference;
+    final Script hostScriptReference;
     private int absorptionMinLimit; //determines when to re-pot absorptions
     private int potionMinBoost; //if using super ranging, determines when to re-pot
 
@@ -92,7 +92,7 @@ public abstract class MidDreamNode implements ExecutableNode {
         return false;
     }
 
-    boolean handleOverload() throws InterruptedException {
+    boolean handleOverload() {
         boolean interacted = false;
         if(doOverload && doesPlayerHaveOverloadsLeft()){
             ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.OVERLOADING);
@@ -122,7 +122,7 @@ public abstract class MidDreamNode implements ExecutableNode {
             int estimatedHealthAfterOverload = startingHealth - 51;
             new ConditionalSleep(7000, 500){
                 @Override
-                public boolean condition() throws InterruptedException {
+                public boolean condition() {
                     int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
                     int difference = Math.abs(estimatedHealthAfterOverload - currentHealth);
                     return difference < 5;
@@ -175,11 +175,12 @@ public abstract class MidDreamNode implements ExecutableNode {
 
     }
 
-    void handleSpecialAttack() throws InterruptedException {
+    @SuppressWarnings("EmptyMethod")
+    void handleSpecialAttack() {
 
     }
 
-    private boolean walkToCorner() throws InterruptedException {
+    private boolean walkToCorner() {
         int corner = ThreadLocalRandom.current().nextInt(0, 4);
         WalkingEvent walk;
         switch(corner){
@@ -203,7 +204,7 @@ public abstract class MidDreamNode implements ExecutableNode {
             final boolean[] finished = new boolean[1];
             new ConditionalSleep(20000) {
                 @Override
-                public boolean condition() throws InterruptedException {
+                public boolean condition() {
                     finished[0] = walk.hasFinished();
                     return finished[0];
                 }
