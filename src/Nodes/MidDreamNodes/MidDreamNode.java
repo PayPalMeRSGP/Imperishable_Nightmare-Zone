@@ -1,7 +1,6 @@
 package Nodes.MidDreamNodes;
 
 import Nodes.ExecutableNode;
-import ScriptClasses.Paint.CombatXPTracker;
 import ScriptClasses.Paint.ScriptStatusPainter;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.*;
@@ -29,7 +28,6 @@ public abstract class MidDreamNode implements ExecutableNode {
     private boolean doCameraRotation;
     private boolean noPrayer;
     boolean powerSurgeActive;
-
 
     MidDreamNode(Script hostScriptReference){
         this.hostScriptReference = hostScriptReference;
@@ -102,7 +100,7 @@ public abstract class MidDreamNode implements ExecutableNode {
                     Statics.OVERLOAD_POTION_3_ID, Statics.OVERLOAD_POTION_4_ID);
 
             if(interacted){
-                ScriptStatusPainter.setOverloadTimer();
+                ScriptStatusPainter.startOverloadTimer();
             }
 
             //while hp is being depleted from overload it is possible to lose alot of absorptions
@@ -113,6 +111,7 @@ public abstract class MidDreamNode implements ExecutableNode {
                 prayer.open();
                 prayer.set(PrayerButton.PROTECT_FROM_MELEE, true);
                 didMeleePrayer = true;
+                noPrayer = false;
             }
             else{
                 noPrayer = true;
@@ -151,6 +150,9 @@ public abstract class MidDreamNode implements ExecutableNode {
         }
     }
 
+    void switchDreamNode(MidDreamNode target){
+        hostScriptReference.log("Swapping Nodes to " + target.getClass().getSimpleName());
+    }
 
     void randomCameraYawRotation(){
         if(doCameraRotation){

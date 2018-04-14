@@ -146,7 +146,7 @@ public class CombatXPTracker extends API{
     }
 
     private int getDefLvl() {
-        return getSkills().getStatic(Skill.STRENGTH);
+        return getSkills().getStatic(Skill.DEFENCE);
     }
 
     private int getRngLvl(){

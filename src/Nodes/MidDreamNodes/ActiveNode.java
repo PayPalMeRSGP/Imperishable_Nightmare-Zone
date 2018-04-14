@@ -1,7 +1,6 @@
 package Nodes.MidDreamNodes;
 
 import Nodes.ExecutableNode;
-import ScriptClasses.Paint.CombatXPTracker;
 import ScriptClasses.Paint.ScriptStatusPainter;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.Prayer;
@@ -34,6 +33,7 @@ public class ActiveNode extends MidDreamNode {
 
     @Override
     public int executeNodeAction() throws InterruptedException {
+        ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.ACTIVE);
         overloadFailSafe();
         handleAbsorptionLvl();
         if(hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS) > 1){
@@ -82,7 +82,7 @@ public class ActiveNode extends MidDreamNode {
                     doPrayerFlick = true;
                 }
             }, nextFlickMs);
-            ScriptStatusPainter.setPrayerFlickTimer((nextFlickMs+999)/1000); //round up to nearest second
+            ScriptStatusPainter.startPrayerFlickTimer((nextFlickMs+999)/1000); //round up to nearest second
 
             if(ThreadLocalRandom.current().nextBoolean()){
                 openInventoryTab();

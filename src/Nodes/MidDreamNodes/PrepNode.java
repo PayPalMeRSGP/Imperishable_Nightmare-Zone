@@ -34,6 +34,7 @@ public class PrepNode extends MidDreamNode {
     @Override
     public int executeNodeAction() throws InterruptedException {
         ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.PREPARING);
+        ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.PREP);
         setDoOverload(true);
         if(walkToCorner()){
             handleAbsorptionLvl();
@@ -45,7 +46,7 @@ public class PrepNode extends MidDreamNode {
     }
 
     private boolean walkToCorner() {
-        int corner = ThreadLocalRandom.current().nextInt(0, 4);
+        int corner = ThreadLocalRandom.current().nextInt(0, 2);
         WalkingEvent walk;
         switch(corner){
             case 0: //SE corner
@@ -96,7 +97,7 @@ public class PrepNode extends MidDreamNode {
         if(currentHealth > 50 && doesPlayerHaveOverloadsLeft()){
             inv.interact(Statics.DRINK, Statics.OVERLOAD_POTION_1_ID, Statics.OVERLOAD_POTION_2_ID,
                     Statics.OVERLOAD_POTION_3_ID, Statics.OVERLOAD_POTION_4_ID);
-            ScriptStatusPainter.setOverloadTimer();
+            ScriptStatusPainter.startOverloadTimer();
             //wait out overload dmg, DO NOT GUZZLE while taking overload dmg, may result in overload dmg player killing player.
             int estimatedHealthAfterOverload = currentHealth - 51;
             new ConditionalSleep(7000, 500){
