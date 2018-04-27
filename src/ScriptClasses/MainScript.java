@@ -15,15 +15,15 @@ import org.osbot.rs07.script.ScriptManifest;
 
 import java.awt.*;
 
+@SuppressWarnings("unused")
 @ScriptManifest(author = "PayPalMeRSGP", name = MainScript.BUILD_NUM + " " + MainScript.SCRIPT_NAME, info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MessageListener {
     static final String SCRIPT_NAME = "Imperishable Nightmare-Zone";
-    static final int BUILD_NUM = 11;
+    static final int BUILD_NUM = 12;
 
-    private GraphBasedNodeExecutor executor;
+    private MarkovNodeExecutor executor;
     private DraggablePaintHandler paintHandler;
     private CombatXPTracker tracker;
-    private Rectangle paintArea;
 
     @Override
     public void onStart() throws InterruptedException {
@@ -41,7 +41,7 @@ public class MainScript extends Script implements MessageListener {
     @Override
     public void onPaint(Graphics2D g) {
         super.onPaint(g);
-        paintArea = paintHandler.getPaintArea();
+        Rectangle paintArea = paintHandler.getPaintArea();
         g.setColor(new Color(156,156,156, 127));
         g.fillRect(paintArea.x, paintArea.y, paintArea.width, paintArea.height);
 
@@ -131,7 +131,7 @@ public class MainScript extends Script implements MessageListener {
         AFKNode afkNode = (AFKNode) AFKNode.getSingleton(this);
         ActiveNode activeNode = (ActiveNode) ActiveNode.getSingleton(this);
 
-        executor = new GraphBasedNodeExecutor(prepNode);
+        executor = new MarkovNodeExecutor(prepNode);
         /*executor.addEdgeToNode(prepNode, afkNode, 1);
         executor.addEdgeToNode(afkNode, afkNode, 1);*/
         executor.addEdgeToNode(prepNode, activeNode, 1);

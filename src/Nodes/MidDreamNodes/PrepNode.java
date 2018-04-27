@@ -34,6 +34,7 @@ public class PrepNode extends MidDreamNode {
     @Override
     public int executeNodeAction() throws InterruptedException {
         ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.PREPARING);
+        ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.PREP);
         setDoOverload(true);
         if(walkToCorner()){
             handleAbsorptionLvl();
@@ -44,21 +45,21 @@ public class PrepNode extends MidDreamNode {
         return 1000;
     }
 
-    private boolean walkToCorner() throws InterruptedException {
-        int corner = ThreadLocalRandom.current().nextInt(0, 4);
+    private boolean walkToCorner() {
+        int corner = ThreadLocalRandom.current().nextInt(0, 2);
         WalkingEvent walk;
         switch(corner){
             case 0: //SE corner
-                walk = setUpWalker(63, 48);
+                walk = setUpWalker(63);
                 break;
             case 1: //SW corner
-                walk = setUpWalker(32, 48);
+                walk = setUpWalker(32);
                 break;
             case 2: //NW corner
-                walk = setUpWalker(32, 48);
+                walk = setUpWalker(32);
                 break;
             case 3: //NE corner
-                walk = setUpWalker(32, 48);
+                walk = setUpWalker(32);
                 break;
             default:
                 throw new UnsupportedOperationException("hit default in walkToCorner");
@@ -68,7 +69,7 @@ public class PrepNode extends MidDreamNode {
             final boolean[] finished = new boolean[1];
             new ConditionalSleep(20000) {
                 @Override
-                public boolean condition() throws InterruptedException {
+                public boolean condition() {
                     finished[0] = walk.hasFinished();
                     return finished[0];
                 }
@@ -78,9 +79,9 @@ public class PrepNode extends MidDreamNode {
         return false;
     }
 
-    private WalkingEvent setUpWalker(int localX, int localY){
+    private WalkingEvent setUpWalker(int localX){
         int actualX = hostScriptReference.getMap().getBaseX() + localX;
-        int actualY = hostScriptReference.getMap().getBaseY() + localY;
+        int actualY = hostScriptReference.getMap().getBaseY() + 48;
         int z = hostScriptReference.myPlayer().getPosition().getZ();
         WalkingEvent walk = new WalkingEvent(new Position(actualX, actualY, z));
         walk.setMiniMapDistanceThreshold(5);
@@ -96,12 +97,12 @@ public class PrepNode extends MidDreamNode {
         if(currentHealth > 50 && doesPlayerHaveOverloadsLeft()){
             inv.interact(Statics.DRINK, Statics.OVERLOAD_POTION_1_ID, Statics.OVERLOAD_POTION_2_ID,
                     Statics.OVERLOAD_POTION_3_ID, Statics.OVERLOAD_POTION_4_ID);
-            ScriptStatusPainter.setOverloadTimer();
+            ScriptStatusPainter.startOverloadTimer();
             //wait out overload dmg, DO NOT GUZZLE while taking overload dmg, may result in overload dmg player killing player.
             int estimatedHealthAfterOverload = currentHealth - 51;
             new ConditionalSleep(7000, 500){
                 @Override
-                public boolean condition() throws InterruptedException {
+                public boolean condition() {
                     int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
                     int difference = Math.abs(estimatedHealthAfterOverload - currentHealth);
                     return difference < 5;

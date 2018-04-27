@@ -33,6 +33,7 @@ public class AFKNode extends MidDreamNode {
 
     @Override
     public int executeNodeAction() throws InterruptedException {
+        ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.AFK);
         overloadFailSafe();
 
         if(hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS) > hpMaxLimit){
