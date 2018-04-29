@@ -16,8 +16,10 @@ import java.util.TimerTask;
 import java.util.concurrent.ThreadLocalRandom;
 
 public abstract class MidDreamNode implements ExecutableNode {
-    private final static String DRINK = "Drink";
-    private final static String GUZZLE = "Guzzle";
+    final static String DRINK = "Drink";
+    final static String GUZZLE = "Guzzle";
+    final static String FEEL = "Feel";
+
     final Script hostScriptReference;
     private int absorptionMinLimit; //determines when to re-pot absorptions
     private int potionMinBoost; //if using super ranging, determines when to re-pot
@@ -136,7 +138,7 @@ public abstract class MidDreamNode implements ExecutableNode {
         return interacted;
     }
 
-    void guzzleRockCakeTo1() throws InterruptedException {
+    void decreaseHP() throws InterruptedException {
         int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
         if(currentHealth > 50 || doOverload){
             return;
@@ -144,14 +146,20 @@ public abstract class MidDreamNode implements ExecutableNode {
         while(currentHealth > 1){
             ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.GUZZLING_ROCKCAKES);
             Inventory inv = hostScriptReference.getInventory();
-            inv.interact(GUZZLE, Statics.DWARVEN_ROCK_CAKE_ID);
+
+            if(inv.contains(Statics.DWARVEN_ROCK_CAKE_ID)){
+                inv.interact(GUZZLE, Statics.DWARVEN_ROCK_CAKE_ID);
+            }
+            else if(inv.contains(Statics.LOCATOR_ORB_ID)){
+                inv.interact(FEEL, Statics.LOCATOR_ORB_ID);
+            }
+            else{
+                hostScriptReference.log("locator orb or rock cake not found");
+                hostScriptReference.stop(false);
+            }
             MethodProvider.sleep(Statics.randomNormalDist(Statics.RS_GAME_TICK_MS, 60.0));
             currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
         }
-    }
-
-    void switchDreamNode(MidDreamNode target){
-        hostScriptReference.log("Swapping Nodes to " + target.getClass().getSimpleName());
     }
 
     void randomCameraYawRotation(){

@@ -32,7 +32,7 @@ public class PrepNode extends MidDreamNode {
     }
 
     @Override
-    public int executeNodeAction() throws InterruptedException {
+    public int executeNode() throws InterruptedException {
         ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.PREPARING);
         ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.PREP);
         setDoOverload(true);
@@ -110,10 +110,19 @@ public class PrepNode extends MidDreamNode {
             }.sleep();
         }
         while(currentHealth > 1){
-            guzzleRockCake();
-            currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
-            Statics.hostScriptReference.log("guzzling rockcake... hp: " + currentHealth);
+            ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.GUZZLING_ROCKCAKES);
+            if(inv.contains(Statics.DWARVEN_ROCK_CAKE_ID)){
+                inv.interact(GUZZLE, Statics.DWARVEN_ROCK_CAKE_ID);
+            }
+            else if(inv.contains(Statics.LOCATOR_ORB_ID)){
+                inv.interact(FEEL, Statics.LOCATOR_ORB_ID);
+            }
+            else{
+                hostScriptReference.log("locator orb or rock cake not found");
+                hostScriptReference.stop(false);
+            }
             MethodProvider.sleep(Statics.randomNormalDist(Statics.RS_GAME_TICK_MS, 60.0));
+            currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
         }
     }
 

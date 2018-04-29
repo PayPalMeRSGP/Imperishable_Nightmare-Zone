@@ -1,7 +1,6 @@
 package Nodes.MidDreamNodes;
 
 import Nodes.ExecutableNode;
-import ScriptClasses.Paint.CombatXPTracker;
 import ScriptClasses.Paint.ScriptStatusPainter;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.ui.*;
@@ -32,13 +31,13 @@ public class AFKNode extends MidDreamNode {
     }
 
     @Override
-    public int executeNodeAction() throws InterruptedException {
+    public int executeNode() throws InterruptedException {
         ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.AFK);
         overloadFailSafe();
 
         if(hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS) > hpMaxLimit){
             handleOverload();
-            guzzleRockCakeTo1();
+            decreaseHP();
         }
         hostScriptReference.getMouse().moveOutsideScreen();
         ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.AFKING);

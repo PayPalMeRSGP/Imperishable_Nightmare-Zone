@@ -32,13 +32,13 @@ public class ActiveNode extends MidDreamNode {
     }
 
     @Override
-    public int executeNodeAction() throws InterruptedException {
+    public int executeNode() throws InterruptedException {
         ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.ACTIVE);
         overloadFailSafe();
         handleAbsorptionLvl();
         if(hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS) > 1){
             if(!handleOverload()){
-                guzzleRockCakeTo1();
+                decreaseHP();
             }
         }
 
@@ -59,7 +59,7 @@ public class ActiveNode extends MidDreamNode {
             int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
             //(currentHealth <= 49 || !doesPlayerHaveOverloadsLeft()) player still guzzles to 1 if over 49 and overloads are not in inventory
             if(currentHealth > 1 && (currentHealth <= 49 || !doesPlayerHaveOverloadsLeft())){
-                guzzleRockCakeTo1();
+                decreaseHP();
             }
 
             if(currentHealth == 1){

@@ -64,10 +64,10 @@ class MarkovNodeExecutor {
     return executor.executeNodeThenTraverse();
     where executor is an instance of this class
 
-    sleep times returns are implemented inside the executeNodeAction() in each ExecutableNode instance
+    sleep times returns are implemented inside the executeNode() in each ExecutableNode instance
      */
     public int executeNodeThenTraverse() throws InterruptedException {
-        int onLoopSleepTime = current.executeNodeAction();
+        int onLoopSleepTime = current.executeNode();
         traverseToNextNode();
         return onLoopSleepTime;
     }

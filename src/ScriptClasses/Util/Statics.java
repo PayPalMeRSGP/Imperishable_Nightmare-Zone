@@ -29,6 +29,7 @@ public class Statics {
     public static final int SUPER_RANGING_2_ID = 11724;
     public static final int SUPER_RANGING_1_ID = 11725;
     public static final int DWARVEN_ROCK_CAKE_ID = 7510;
+    public static final int LOCATOR_ORB_ID = 22081;
     //npc
     public static final int DOMINIC_ONION_ID = 1120;
     //actions
