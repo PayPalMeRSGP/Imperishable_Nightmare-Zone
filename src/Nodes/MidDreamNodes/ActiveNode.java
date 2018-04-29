@@ -1,6 +1,6 @@
 package Nodes.MidDreamNodes;
 
-import Nodes.ExecutableNode;
+import ScriptClasses.MarkovNodeExecutor;
 import ScriptClasses.Paint.ScriptStatusPainter;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.Prayer;
@@ -18,17 +18,26 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class ActiveNode extends MidDreamNode {
     private boolean doPrayerFlick = true;
-    private static ExecutableNode singleton = null;
+    private static MarkovNodeExecutor.ExecutableNode singleton = null;
 
     private ActiveNode(Script hostScriptReference){
         super(hostScriptReference);
     }
 
-    public static ExecutableNode getSingleton(Script hostScriptReference) {
+    public static MarkovNodeExecutor.ExecutableNode getSingleton(Script hostScriptReference) {
         if(singleton == null){
             singleton = new ActiveNode(hostScriptReference);
         }
         return singleton;
+    }
+
+    /*
+    This is called when AFKNode switches back to ActiveNode
+     */
+    public int resumeActiveNode() throws InterruptedException {
+        doPrayerFlick = true;
+        onLoopsB4Switch = 100;
+        return executeNode();
     }
 
     @Override
@@ -43,13 +52,17 @@ public class ActiveNode extends MidDreamNode {
         }
 
         rapidHealFlick(); //rapid heal only flicks if doPrayerFlick variable is true, else it does nothing
-        //randomCameraYawRotation();
         if(!doPrayerFlick && ThreadLocalRandom.current().nextBoolean() && !powerSurgeActive){
             hostScriptReference.getMouse().moveOutsideScreen();
         }
 
         ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.AFKING);
         return (int) Statics.randomNormalDist(1000, 500);
+    }
+
+    @Override
+    public boolean doConditionalTraverse() {
+        return onLoopsB4Switch <= 0;
     }
 
 
@@ -82,7 +95,7 @@ public class ActiveNode extends MidDreamNode {
                     doPrayerFlick = true;
                 }
             }, nextFlickMs);
-            ScriptStatusPainter.startPrayerFlickTimer((nextFlickMs+999)/1000); //round up to nearest second
+            ScriptStatusPainter.startPrayerFlickTimer((nextFlickMs+999)/1000);
 
             if(ThreadLocalRandom.current().nextBoolean()){
                 openInventoryTab();

@@ -1,6 +1,6 @@
 package Nodes.MidDreamNodes;
 
-import Nodes.ExecutableNode;
+import ScriptClasses.MarkovNodeExecutor;
 import ScriptClasses.Paint.ScriptStatusPainter;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.Inventory;
@@ -18,13 +18,13 @@ import org.osbot.rs07.utility.ConditionalSleep;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class PrepNode extends MidDreamNode {
-    private static ExecutableNode singleton = null;
+    private static MarkovNodeExecutor.ExecutableNode singleton = null;
 
     private PrepNode(Script hostScriptReference) {
         super(hostScriptReference);
     }
 
-    public static ExecutableNode getSingleton(Script hostScriptReference) {
+    public static MarkovNodeExecutor.ExecutableNode getSingleton(Script hostScriptReference) {
         if(singleton == null){
             singleton = new PrepNode(hostScriptReference);
         }
@@ -43,6 +43,11 @@ public class PrepNode extends MidDreamNode {
         }
 
         return 1000;
+    }
+
+    @Override
+    public boolean doConditionalTraverse() {
+        return false;
     }
 
     private boolean walkToCorner() {

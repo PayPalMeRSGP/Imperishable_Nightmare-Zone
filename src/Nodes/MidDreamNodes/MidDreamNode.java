@@ -1,6 +1,6 @@
 package Nodes.MidDreamNodes;
 
-import Nodes.ExecutableNode;
+import ScriptClasses.MarkovNodeExecutor;
 import ScriptClasses.Paint.ScriptStatusPainter;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.*;
@@ -15,7 +15,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ThreadLocalRandom;
 
-public abstract class MidDreamNode implements ExecutableNode {
+public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode {
     final static String DRINK = "Drink";
     final static String GUZZLE = "Guzzle";
     final static String FEEL = "Feel";
@@ -30,6 +30,9 @@ public abstract class MidDreamNode implements ExecutableNode {
     private boolean doCameraRotation;
     private boolean noPrayer;
     boolean powerSurgeActive;
+
+    //onLoop calls before switching AFK <-> Active
+    int onLoopsB4Switch;
 
     MidDreamNode(Script hostScriptReference){
         this.hostScriptReference = hostScriptReference;

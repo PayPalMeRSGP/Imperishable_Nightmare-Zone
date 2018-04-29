@@ -19,7 +19,7 @@ import java.awt.*;
 @ScriptManifest(author = "PayPalMeRSGP", name = MainScript.BUILD_NUM + " " + MainScript.SCRIPT_NAME, info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MessageListener {
     static final String SCRIPT_NAME = "Imperishable Nightmare-Zone";
-    static final int BUILD_NUM = 12;
+    static final int BUILD_NUM = 0;
 
     private MarkovNodeExecutor executor;
     private DraggablePaintHandler paintHandler;
@@ -132,10 +132,13 @@ public class MainScript extends Script implements MessageListener {
         ActiveNode activeNode = (ActiveNode) ActiveNode.getSingleton(this);
 
         executor = new MarkovNodeExecutor(prepNode);
-        /*executor.addEdgeToNode(prepNode, afkNode, 1);
-        executor.addEdgeToNode(afkNode, afkNode, 1);*/
-        executor.addEdgeToNode(prepNode, activeNode, 1);
-        executor.addEdgeToNode(activeNode, activeNode, 1);
+        /*executor.addNormalEdgeToNode(prepNode, afkNode, 1);
+        executor.addNormalEdgeToNode(afkNode, afkNode, 1);*/
+        executor.addNormalEdgeToNode(prepNode, activeNode, 1);
+        executor.addNormalEdgeToNode(activeNode, activeNode, 1);
+        executor.addCondEdgeToNode(activeNode, afkNode, 1);
+        executor.addCondEdgeToNode(afkNode, activeNode, 1);
+
 
         tracker = new CombatXPTracker();
         tracker.exchangeContext(bot);

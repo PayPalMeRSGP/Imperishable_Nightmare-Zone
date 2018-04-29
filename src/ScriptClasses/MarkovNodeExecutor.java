@@ -1,12 +1,16 @@
 package ScriptClasses;
 
-import Nodes.ExecutableNode;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.ThreadLocalRandom;
 
-class MarkovNodeExecutor {
+public class MarkovNodeExecutor {
+
+    public interface ExecutableNode {
+        int executeNode() throws InterruptedException;
+        boolean doConditionalTraverse();
+    }
+
     private class NodeEdge {
         final ExecutableNode u; //source node
         final ExecutableNode v; //edge to some other node
@@ -20,41 +24,73 @@ class MarkovNodeExecutor {
         }
     }
 
-    private final HashMap<ExecutableNode, LinkedList<NodeEdge>> adjMap; //think of this as an adjacency list
+
+    //below maps can be thought of as adjacency lists
+    private final HashMap<ExecutableNode, LinkedList<NodeEdge>> normalAdjMap; //These edges are traversed by default
+    private final HashMap<ExecutableNode, LinkedList<NodeEdge>> conditionalAdjMap; //" " traversed based on some condtion
     private ExecutableNode current; //the current node to execute inside onLoop
 
     private boolean jumpingNodes = false;
     private ExecutableNode jumpTarget;
 
     public MarkovNodeExecutor(ExecutableNode startingNode){
-        adjMap = new HashMap<>();
+        normalAdjMap = new HashMap<>();
+        conditionalAdjMap= new HashMap<>();
         current = startingNode;
     }
 
-    public void addEdgeToNode(ExecutableNode u, ExecutableNode v, int edgeExecutionWeight){
-        if(adjMap.containsKey(u)){
-            LinkedList<NodeEdge> edges = adjMap.get(u);
+    public void addNormalEdgeToNode(ExecutableNode u, ExecutableNode v, int edgeExecutionWeight){
+        if(normalAdjMap.containsKey(u)){
+            LinkedList<NodeEdge> edges = normalAdjMap.get(u);
             if(edges == null){ //check if list of edges for u is instantiated, if not do so.
                 edges = new LinkedList<>();
 
             }
             edges.add(new NodeEdge(u, v, edgeExecutionWeight));
-            adjMap.put(u, edges);
+            normalAdjMap.put(u, edges);
         }
         else{
             LinkedList<NodeEdge> edges = new LinkedList<>();
             edges.add(new NodeEdge(u, v, edgeExecutionWeight));
-            adjMap.put(u, edges);
+            normalAdjMap.put(u, edges);
         }
     }
 
-    public void deleteEdgeForNode(ExecutableNode u, ExecutableNode v){
-        if(adjMap.containsKey(u)){
-            LinkedList<NodeEdge> edges = adjMap.get(u);
+    public void addCondEdgeToNode(ExecutableNode u, ExecutableNode v, int edgeExecutionWeight){
+        if(conditionalAdjMap.containsKey(u)){
+            LinkedList<NodeEdge> edges = conditionalAdjMap.get(u);
+            if(edges == null){ //check if list of edges for u is instantiated, if not do so.
+                edges = new LinkedList<>();
+
+            }
+            edges.add(new NodeEdge(u, v, edgeExecutionWeight));
+            conditionalAdjMap.put(u, edges);
+        }
+        else{
+            LinkedList<NodeEdge> edges = new LinkedList<>();
+            edges.add(new NodeEdge(u, v, edgeExecutionWeight));
+            conditionalAdjMap.put(u, edges);
+        }
+    }
+
+    public void deleteNormalEdgeForNode(ExecutableNode u, ExecutableNode v){
+        if(normalAdjMap.containsKey(u)){
+            LinkedList<NodeEdge> edges = normalAdjMap.get(u);
             edges.forEach(edge -> {
-               if(edge.v == v){
-                   edges.remove(edge);
-               }
+                if(edge.v == v){
+                    edges.remove(edge);
+                }
+            });
+        }
+    }
+
+    public void deleteCondEdgeForNode(ExecutableNode u, ExecutableNode v){
+        if(conditionalAdjMap.containsKey(u)){
+            LinkedList<NodeEdge> edges = conditionalAdjMap.get(u);
+            edges.forEach(edge -> {
+                if(edge.v == v){
+                    edges.remove(edge);
+                }
             });
         }
     }
@@ -68,49 +104,61 @@ class MarkovNodeExecutor {
      */
     public int executeNodeThenTraverse() throws InterruptedException {
         int onLoopSleepTime = current.executeNode();
-        traverseToNextNode();
+        normalTraverse();
         return onLoopSleepTime;
     }
 
-    /*
-    Sets a flag to be used in traverseToNextNode() that indicates a jump is requested
-    To immediately jump nodes, return in caller that calls this method.
-    */
-    public void jumpToNode(ExecutableNode target){
-        jumpingNodes = true;
-        jumpTarget = target;
+    private void normalTraverse(){
+        if(current != null){
+            LinkedList<NodeEdge> edges = normalAdjMap.get(current);
+            if(edges.size() == 0){
+                return; //if no outgoing edges, current does not get changed therefore the same node will be repeated.
+            }
+
+            // Algorithm for random percentage branching
+            // https://stackoverflow.com/questions/45836397/coding-pattern-for-random-percentage-branching?noredirect=1&lq=1
+            int combinedWeight = edges.stream().mapToInt(edge -> edge.edgeExecutionWeight).sum();
+            int sum = 0;
+            int roll = ThreadLocalRandom.current().nextInt(1, combinedWeight+1);
+            NodeEdge selectedEdge = null;
+            for(NodeEdge edge: edges){
+                sum += edge.edgeExecutionWeight;
+                if(sum >= roll){
+                    selectedEdge = edge;
+                    break;
+                }
+            }
+            if(selectedEdge == null){
+                selectedEdge = edges.getLast();
+            }
+            current = selectedEdge.v;
+        }
     }
 
-    private void traverseToNextNode(){
+    private void conditionalTraverse(){
         if(current != null){
-            if(jumpingNodes){
-                jumpingNodes = false;
-                current = jumpTarget;
+            LinkedList<NodeEdge> edges = conditionalAdjMap.get(current);
+            if(edges.size() == 0){
+                return; //if no outgoing edges, current does not get changed therefore the same node will be repeated.
             }
-            else{
-                LinkedList<NodeEdge> edges = adjMap.get(current);
-                if(edges.size() == 0){
-                    return; //if no outgoing edges, current does not get changed therefore the same node will be repeated.
-                }
 
-                // Algorithm for random percentage branching
-                // https://stackoverflow.com/questions/45836397/coding-pattern-for-random-percentage-branching?noredirect=1&lq=1
-                int combinedWeight = edges.stream().mapToInt(edge -> edge.edgeExecutionWeight).sum();
-                int sum = 0;
-                int roll = ThreadLocalRandom.current().nextInt(1, combinedWeight+1);
-                NodeEdge selectedEdge = null;
-                for(NodeEdge edge: edges){
-                    sum += edge.edgeExecutionWeight;
-                    if(sum >= roll){
-                        selectedEdge = edge;
-                        break;
-                    }
+            // Algorithm for random percentage branching
+            // https://stackoverflow.com/questions/45836397/coding-pattern-for-random-percentage-branching?noredirect=1&lq=1
+            int combinedWeight = edges.stream().mapToInt(edge -> edge.edgeExecutionWeight).sum();
+            int sum = 0;
+            int roll = ThreadLocalRandom.current().nextInt(1, combinedWeight+1);
+            NodeEdge selectedEdge = null;
+            for(NodeEdge edge: edges){
+                sum += edge.edgeExecutionWeight;
+                if(sum >= roll){
+                    selectedEdge = edge;
+                    break;
                 }
-                if(selectedEdge == null){
-                    selectedEdge = edges.getLast();
-                }
-                current = selectedEdge.v;
             }
+            if(selectedEdge == null){
+                selectedEdge = edges.getLast();
+            }
+            current = selectedEdge.v;
         }
     }
 }
