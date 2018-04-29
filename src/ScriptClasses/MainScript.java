@@ -76,8 +76,8 @@ public class MainScript extends Script implements MessageListener {
                     g.drawString("Runtime: " + formatTime(tracker.getRunTime()),
                             paintArea.x + 10, paintArea.y + 75);
 
-                    g.drawString("Status: " + ScriptStatusPainter.getCurrentScriptStatus(),
-                            paintArea.x + 10, paintArea.y + 90);
+                    g.drawString("Status: " + ScriptStatusPainter.getCurrentMarkovStatus() + "(" + ScriptStatusPainter.getOnLoopsB4Switch() + ") " +
+                                    "- " + ScriptStatusPainter.getCurrentScriptStatus(), paintArea.x + 10, paintArea.y + 90);
 
                     g.drawString("Overload Timer: ~" + ScriptStatusPainter.getOverloadSecondsLeft()+"s",
                             paintArea.x + 10, paintArea.y + 105);
@@ -101,8 +101,8 @@ public class MainScript extends Script implements MessageListener {
                     g.drawString("Runtime: " + formatTime(tracker.getRunTime()),
                             paintArea.x + 10, paintArea.y + 45);
 
-                    g.drawString("Status: " + ScriptStatusPainter.getCurrentScriptStatus(),
-                            paintArea.x + 10, paintArea.y + 60);
+                    g.drawString("Status: " + ScriptStatusPainter.getCurrentMarkovStatus() + "(" + ScriptStatusPainter.getOnLoopsB4Switch() + ") " +
+                                    "- " + ScriptStatusPainter.getCurrentScriptStatus(), paintArea.x + 10, paintArea.y + 60);
 
                     g.drawString("Overload Timer: ~" + ScriptStatusPainter.getOverloadSecondsLeft()+"s",
                             paintArea.x + 10, paintArea.y + 75);

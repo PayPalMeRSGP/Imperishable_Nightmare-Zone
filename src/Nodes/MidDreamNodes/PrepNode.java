@@ -34,10 +34,10 @@ public class PrepNode extends MidDreamNode {
     @Override
     public int executeNode() throws InterruptedException {
         ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.PREPARING);
-        ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.PREP);
+        ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.PREP_NODE);
         setDoOverload(true);
         if(walkToCorner()){
-            handleAbsorptionLvl();
+            checkAbsorption();
             setPlayerHealthTo1();
             turnOnAutoRetaliate();
         }

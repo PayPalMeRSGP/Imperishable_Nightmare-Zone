@@ -104,7 +104,11 @@ public class MarkovNodeExecutor {
      */
     public int executeNodeThenTraverse() throws InterruptedException {
         int onLoopSleepTime = current.executeNode();
-        normalTraverse();
+        if(current.doConditionalTraverse())
+            conditionalTraverse();
+        else{
+            normalTraverse();
+        }
         return onLoopSleepTime;
     }
 

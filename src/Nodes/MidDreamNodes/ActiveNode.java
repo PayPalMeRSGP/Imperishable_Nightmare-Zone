@@ -42,11 +42,11 @@ public class ActiveNode extends MidDreamNode {
 
     @Override
     public int executeNode() throws InterruptedException {
-        ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.ACTIVE);
+        ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.ACTIVE_NODE);
         overloadFailSafe();
-        handleAbsorptionLvl();
+        checkAbsorption();
         if(hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS) > 1){
-            if(!handleOverload()){
+            if(!checkOverload()){
                 decreaseHP();
             }
         }
@@ -57,6 +57,8 @@ public class ActiveNode extends MidDreamNode {
         }
 
         ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.AFKING);
+        onLoopsB4Switch--;
+        ScriptStatusPainter.setOnLoopsB4Switch(onLoopsB4Switch);
         return (int) Statics.randomNormalDist(1000, 500);
     }
 

@@ -31,7 +31,7 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
     private boolean noPrayer;
     boolean powerSurgeActive;
 
-    //onLoop calls before switching AFK <-> Active
+    //onLoop calls before switching AFK_NODE <-> Active
     int onLoopsB4Switch;
 
     MidDreamNode(Script hostScriptReference){
@@ -49,7 +49,7 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
         }
     }
 
-    void handleAbsorptionLvl() throws InterruptedException {
+    void checkAbsorption() throws InterruptedException {
         Inventory inv = hostScriptReference.getInventory();
         int absorptionLvl = getAbsorptionLvl();
         if(absorptionLvl < 0){
@@ -95,19 +95,10 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
         return false;
     }
 
-    boolean handleOverload() {
+    boolean checkOverload() {
         boolean interacted = false;
         if(doOverload && doesPlayerHaveOverloadsLeft()){
             ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.OVERLOADING);
-            openInventoryTab();
-            Inventory inv = hostScriptReference.getInventory();
-            interacted = inv.interact(DRINK, Statics.OVERLOAD_POTION_1_ID, Statics.OVERLOAD_POTION_2_ID,
-                    Statics.OVERLOAD_POTION_3_ID, Statics.OVERLOAD_POTION_4_ID);
-
-            if(interacted){
-                ScriptStatusPainter.startOverloadTimer();
-            }
-
             //while hp is being depleted from overload it is possible to lose alot of absorptions
             Prayer prayer = Statics.hostScriptReference.getPrayer();
             int currentPrayerPts = hostScriptReference.getSkills().getDynamic(Skill.PRAYER);
@@ -120,6 +111,14 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
             }
             else{
                 noPrayer = true;
+            }
+            openInventoryTab();
+            Inventory inv = hostScriptReference.getInventory();
+            interacted = inv.interact(DRINK, Statics.OVERLOAD_POTION_1_ID, Statics.OVERLOAD_POTION_2_ID,
+                    Statics.OVERLOAD_POTION_3_ID, Statics.OVERLOAD_POTION_4_ID);
+
+            if(interacted){
+                ScriptStatusPainter.startOverloadTimer();
             }
 
             int startingHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
@@ -146,7 +145,8 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
         if(currentHealth > 50 || doOverload){
             return;
         }
-        while(currentHealth > 1){
+        //do not reduce hp if overload is about to run out. Hp reduction and overload restore may happen similtaneously, resulting in going under 50hp
+        while(currentHealth > 1 && ScriptStatusPainter.getOverloadSecondsLeft() > 5){
             ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.GUZZLING_ROCKCAKES);
             Inventory inv = hostScriptReference.getInventory();
 
