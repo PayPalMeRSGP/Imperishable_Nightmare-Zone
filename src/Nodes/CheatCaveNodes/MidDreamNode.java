@@ -180,9 +180,9 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
         boolean useSECorner = ThreadLocalRandom.current().nextBoolean();
         WalkingEvent walk;
         if(useSECorner)
-            walk = setUpWalker(63, 48);
+            walk = setUpWalker(63);
         else
-            walk = setUpWalker(32, 48);
+            walk = setUpWalker(32);
 
         script.execute(walk);
         final boolean[] finished = new boolean[1];
@@ -194,12 +194,11 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
             }
         }.sleep();
         return finished[0];
-
     }
 
-    private WalkingEvent setUpWalker(int localX, int localY){
+    private WalkingEvent setUpWalker(int localX){
         int actualX = script.getMap().getBaseX() + localX;
-        int actualY = script.getMap().getBaseY() + localY;
+        int actualY = script.getMap().getBaseY() + 48;
         int z = script.myPlayer().getPosition().getZ();
         WalkingEvent walk = new WalkingEvent(new Position(actualX, actualY, z));
         walk.setMiniMapDistanceThreshold(5);

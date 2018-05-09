@@ -38,7 +38,7 @@ public class PrepNode implements MarkovNodeExecutor.ExecutableNode{
     public int executeNode() throws InterruptedException {
         ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.PREPARING);
         ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.PREP_NODE);
-        if(walkToCorner()){
+        if(cornerSelf()){
             absorptions();
             hitpoints();
             autoRetaliate();
@@ -52,42 +52,27 @@ public class PrepNode implements MarkovNodeExecutor.ExecutableNode{
         return false;
     }
 
-
-    private boolean walkToCorner() {
-        int corner = ThreadLocalRandom.current().nextInt(0, 2);
+    private boolean cornerSelf() {
+        boolean useSECorner = ThreadLocalRandom.current().nextBoolean();
         WalkingEvent walk;
-        switch(corner){
-            case 0: //SE corner
-                walk = walkHelper(63);
-                break;
-            case 1: //SW corner
-                walk = walkHelper(32);
-                break;
-            case 2: //NW corner
-                walk = walkHelper(32);
-                break;
-            case 3: //NE corner
-                walk = walkHelper(32);
-                break;
-            default:
-                throw new UnsupportedOperationException("hit default in walkToCorner");
-        }
-        if(walk != null){
-            script.execute(walk);
-            final boolean[] finished = new boolean[1];
-            new ConditionalSleep(20000) {
-                @Override
-                public boolean condition() {
-                    finished[0] = walk.hasFinished();
-                    return finished[0];
-                }
-            }.sleep();
-            return finished[0];
-        }
-        return false;
+        if(useSECorner)
+            walk = setUpWalker(63);
+        else
+            walk = setUpWalker(32);
+
+        script.execute(walk);
+        final boolean[] finished = new boolean[1];
+        new ConditionalSleep(20000) {
+            @Override
+            public boolean condition() {
+                finished[0] = walk.hasFinished();
+                return finished[0];
+            }
+        }.sleep();
+        return finished[0];
     }
 
-    private WalkingEvent walkHelper(int localX){
+    private WalkingEvent setUpWalker(int localX){
         int actualX = script.getMap().getBaseX() + localX;
         int actualY = script.getMap().getBaseY() + 48;
         int z = script.myPlayer().getPosition().getZ();
