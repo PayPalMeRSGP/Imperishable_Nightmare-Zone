@@ -56,10 +56,4 @@ public class Statics {
         return Math.abs(debug); //in case we get a negative number
     }
 
-    private static boolean hoverOverArea(Point upperLeftBound, Point lowerRightBound, Script hostScriptReference){
-        int randX = ThreadLocalRandom.current().nextInt(upperLeftBound.x, lowerRightBound.x);
-        int randY = ThreadLocalRandom.current().nextInt(upperLeftBound.y, lowerRightBound.y);
-        return !hostScriptReference.getMouse().move(randX, randY);
-    }
-
 }

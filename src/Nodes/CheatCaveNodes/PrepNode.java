@@ -1,4 +1,4 @@
-package Nodes.MidDreamNodes;
+package Nodes.CheatCaveNodes;
 
 import ScriptClasses.MarkovNodeExecutor;
 import ScriptClasses.Paint.ScriptStatusPainter;
@@ -52,9 +52,6 @@ public class PrepNode implements MarkovNodeExecutor.ExecutableNode{
         return false;
     }
 
-    @Override
-    public void resumeNode(int onLoopsB4Switch) {
-    }
 
     private boolean walkToCorner() {
         int corner = ThreadLocalRandom.current().nextInt(0, 2);

@@ -1,8 +1,8 @@
 package ScriptClasses;
 
-import Nodes.MidDreamNodes.AFKNode;
-import Nodes.MidDreamNodes.ActiveNode;
-import Nodes.MidDreamNodes.PrepNode;
+import Nodes.CheatCaveNodes.AFKNode;
+import Nodes.CheatCaveNodes.ActiveNode;
+import Nodes.CheatCaveNodes.PrepNode;
 import ScriptClasses.Paint.DraggablePaintHandler;
 import ScriptClasses.Paint.CombatXPTracker;
 import ScriptClasses.Paint.ScriptStatusPainter;
@@ -29,7 +29,7 @@ public class MainScript extends Script implements MessageListener {
     public void onStart() throws InterruptedException {
         super.onStart();
         getBot().addMessageListener(this);
-        setUp();
+        markovChainSetup();
     }
 
     @Override
@@ -120,7 +120,7 @@ public class MainScript extends Script implements MessageListener {
     }
 
     @SuppressWarnings("deprecation")
-    private void setUp(){
+    private void markovChainSetup(){
         paintHandler = new DraggablePaintHandler();
         this.bot.addMouseListener(paintHandler);
 

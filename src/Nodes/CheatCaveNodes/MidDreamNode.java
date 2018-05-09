@@ -1,4 +1,4 @@
-package Nodes.MidDreamNodes;
+package Nodes.CheatCaveNodes;
 
 import ScriptClasses.MarkovNodeExecutor;
 import ScriptClasses.Paint.ScriptStatusPainter;
@@ -13,30 +13,52 @@ import org.osbot.rs07.utility.ConditionalSleep;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import static ScriptClasses.Util.Statics.DRINK;
-import static ScriptClasses.Util.Statics.FEEL;
-import static ScriptClasses.Util.Statics.GUZZLE;
+import static ScriptClasses.Util.Statics.*;
 
 public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode {
     final Script script;
     private int absorptionMinLimit; //determines when to re-pot absorptions
-    private int potionMinBoost; //if using super ranging, determines when to re-pot
+    //private int potionMinBoost; //if using super ranging/mage, determines when to re-pot
 
     //flags to do certain actions
     private boolean playerDied;
-    private boolean doOverload;
-    private boolean noPrayer;
+    boolean noPrayer;
+    boolean doOverload;
     boolean powerSurgeActive;
 
     //onLoop calls before switching AFK_NODE <-> Active
     int onLoopsB4Switch;
+    /*
+    totalLoops determines how many onLoop calls a cycle of Active and AFK nodes take.
+    totalLoops * activeNodeUsagePercent = ActiveNode's onLoopsB4Switch to AFKNode
+    totalLoops * (1 - activeNodeUsagePercent) = AFKNode's onLoopsB4Switch to ActiveNode
+     */
+    static int totalLoops;
+    double activeNodeUsagePercent;
 
     MidDreamNode(Script script){
         this.script = script;
         this.absorptionMinLimit =  ThreadLocalRandom.current().nextInt(200, 400);
-        this.potionMinBoost = ThreadLocalRandom.current().nextInt(3, 7); //generate potion min boost, used to determine next re-pot
+        //this.potionMinBoost = ThreadLocalRandom.current().nextInt(3, 7);
         this.doOverload = true;
         this.noPrayer = false;
+        this.activeNodeUsagePercent = 0.70;
+    }
+
+    MidDreamNode(Script script, double activeNodeUsagePercent){
+        this.script = script;
+        this.absorptionMinLimit =  ThreadLocalRandom.current().nextInt(200, 400);
+        //this.potionMinBoost = ThreadLocalRandom.current().nextInt(3, 7);
+        this.doOverload = true;
+        this.noPrayer = false;
+        this.activeNodeUsagePercent = activeNodeUsagePercent;
+    }
+
+    public abstract void resumeNode();
+
+    static void randomizeTotalLoops(){
+        MidDreamNode.totalLoops = (int) Statics.randomNormalDist(1000, 500);
+        hostScriptReference.log("Active -> AFK totalLoops: " + totalLoops);
     }
 
     void checkAbsorption() throws InterruptedException {
@@ -72,7 +94,7 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
         }
     }
 
-    boolean drinkSuperRangingPotion(){
+   /* boolean drinkSuperRangingPotion(){
         script.getTabs().open(Tab.INVENTORY);
         int currentRangeBoost = script.getSkills().getDynamic(Skill.RANGED) - script.getSkills().getStatic(Skill.RANGED);
         if(doesPlayerHaveSuperRangePotsLeft() && currentRangeBoost < potionMinBoost){
@@ -82,7 +104,7 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
                     Statics.SUPER_RANGING_2_ID, Statics.SUPER_RANGING_1_ID);
         }
         return false;
-    }
+    }*/
 
     boolean checkOverload() {
         boolean interacted = false;
@@ -221,4 +243,5 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
     public void setDoOverload(boolean doOverload) {
         this.doOverload = doOverload;
     }
+
 }

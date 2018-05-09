@@ -1,4 +1,4 @@
-package Nodes.MidDreamNodes;
+package Nodes.CheatCaveNodes;
 
 import ScriptClasses.MarkovNodeExecutor;
 import ScriptClasses.Paint.ScriptStatusPainter;
@@ -22,6 +22,9 @@ public class ActiveNode extends MidDreamNode {
 
     private ActiveNode(Script hostScriptReference){
         super(hostScriptReference);
+        randomizeTotalLoops();
+        this.onLoopsB4Switch = (int) (totalLoops * activeNodeUsagePercent);
+        script.log("initial ActiveNode set to run for " + onLoopsB4Switch + " loops");
     }
 
     public static MarkovNodeExecutor.ExecutableNode getSingleton(Script hostScriptReference) {
@@ -35,10 +38,12 @@ public class ActiveNode extends MidDreamNode {
     This is called when AFKNode switches back to ActiveNode
      */
     @Override
-    public void resumeNode(int onLoopsB4Switch) {
-        script.log("switching to Active Node");
+    public void resumeNode() {
+        MidDreamNode.randomizeTotalLoops();
+        this.onLoopsB4Switch = (int) (totalLoops * activeNodeUsagePercent);
         doPrayerFlick = true;
-        this.onLoopsB4Switch = onLoopsB4Switch;
+        doOverload = false;
+        script.log("resuming ActiveNode for " + onLoopsB4Switch + " loops");
     }
 
     @Override
@@ -68,8 +73,9 @@ public class ActiveNode extends MidDreamNode {
         return onLoopsB4Switch <= 0;
     }
 
-
     private void rapidHealFlick() throws InterruptedException {
+        if(noPrayer)
+            return;
         if(doPrayerFlick){
             ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.RAPID_HEAL_FLICK);
             int currentHealth = script.getSkills().getDynamic(Skill.HITPOINTS);
@@ -86,6 +92,9 @@ public class ActiveNode extends MidDreamNode {
                     prayer.set(PrayerButton.RAPID_HEAL, true);
                     MethodProvider.sleep(Statics.randomNormalDist(1000, 200));
                     prayer.set(PrayerButton.RAPID_HEAL, false);
+                }
+                else {
+                    noPrayer = true;
                 }
             }
             doPrayerFlick = false;

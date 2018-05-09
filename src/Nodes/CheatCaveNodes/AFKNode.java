@@ -1,4 +1,4 @@
-package Nodes.MidDreamNodes;
+package Nodes.CheatCaveNodes;
 
 import ScriptClasses.MarkovNodeExecutor;
 import ScriptClasses.Paint.ScriptStatusPainter;
@@ -17,7 +17,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class AFKNode extends MidDreamNode {
     private static MarkovNodeExecutor.ExecutableNode singleton = null;
 
-    private int hpMaxLimit;
+    private int hpMaxLimit; //determines when to use rockcake/locator orb to reduce hp
 
     private AFKNode(Script hostScriptReference){
         super(hostScriptReference);
@@ -25,9 +25,11 @@ public class AFKNode extends MidDreamNode {
     }
 
     @Override
-    public void resumeNode(int onLoopsB4Switch) {
+    public void resumeNode() {
         script.log("switching to AFK Node");
-        this.onLoopsB4Switch = onLoopsB4Switch;
+        doOverload = false;
+        this.onLoopsB4Switch = (int) (totalLoops * (1 - activeNodeUsagePercent));
+        script.log("resuming ActiveNode for " + onLoopsB4Switch + " loops");
     }
 
     public static MarkovNodeExecutor.ExecutableNode getSingleton(Script hostScriptReference) {
