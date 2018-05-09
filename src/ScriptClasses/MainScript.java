@@ -37,9 +37,8 @@ public class MainScript extends Script implements MessageListener {
 
     @Override
     public int onLoop() throws InterruptedException {
-        /*paint.determineCombatStyle();
-        return executor.executeNodeThenTraverse();*/
-        return 10000;
+        paint.determineCombatStyle();
+        return executor.executeNodeThenTraverse();
     }
 
     private void markovChainSetup(){
