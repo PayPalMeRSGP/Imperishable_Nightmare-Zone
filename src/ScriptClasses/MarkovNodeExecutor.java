@@ -15,7 +15,7 @@ public class MarkovNodeExecutor {
 
     private class NodeEdge {
         final ExecutableNode u; //source node
-        final ExecutableNode v; //edge to some other node
+        final ExecutableNode v; //destination node
         final int edgeExecutionWeight; //how often do we randomly traverse to this node, higher = more frequent. Relative to edgeExecutionWeights of sibling nodes.
         //ex: if node A had outgoing edges with weights 2, 3, 5. Then edge with weight 2 will be executed 20% (because 2/(2+3+5)) of the time, 3 -> 30%, and 5 -> 50%.
 
@@ -26,14 +26,9 @@ public class MarkovNodeExecutor {
         }
     }
 
-
-    //below maps can be thought of as adjacency lists
     private final HashMap<ExecutableNode, LinkedList<NodeEdge>> normalAdjMap; //These edges are traversed by default
-    private final HashMap<ExecutableNode, LinkedList<NodeEdge>> conditionalAdjMap; //" " traversed based on some condtion
-    private ExecutableNode current; //the current node to execute inside onLoop
-
-    private boolean jumpingNodes = false;
-    private ExecutableNode jumpTarget;
+    private final HashMap<ExecutableNode, LinkedList<NodeEdge>> conditionalAdjMap; //" " traversed if doConditionalTraverse() returns true
+    private ExecutableNode current;
 
     public MarkovNodeExecutor(ExecutableNode startingNode){
         normalAdjMap = new HashMap<>();
@@ -148,11 +143,8 @@ public class MarkovNodeExecutor {
         if(current != null){
             LinkedList<NodeEdge> edges = conditionalAdjMap.get(current);
             if(edges.size() == 0){
-                return; //if no outgoing edges, current does not get changed therefore the same node will be repeated.
+                return;
             }
-
-            // Algorithm for random percentage branching
-            // https://stackoverflow.com/questions/45836397/coding-pattern-for-random-percentage-branching?noredirect=1&lq=1
             int combinedWeight = edges.stream().mapToInt(edge -> edge.edgeExecutionWeight).sum();
             int sum = 0;
             int roll = ThreadLocalRandom.current().nextInt(1, combinedWeight+1);

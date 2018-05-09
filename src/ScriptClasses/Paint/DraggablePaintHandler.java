@@ -9,7 +9,8 @@ public class DraggablePaintHandler extends BotMouseListener {
 
     private int xOffset = 0;
     private int yOffset = 0;
-    private final Rectangle paintArea = new Rectangle(0, 0, 350, 105);
+    private final Rectangle movablePaintArea = new Rectangle(0, 265, 285, 75);
+    private final Rectangle resetPaint = new Rectangle(418, 320, 100, 20);
     private boolean movingPaint = false;
 
     @Override
@@ -18,11 +19,14 @@ public class DraggablePaintHandler extends BotMouseListener {
         switch (mouseEvent.getID()){
             case MouseEvent.MOUSE_PRESSED:
                 Point clickPt = mouseEvent.getPoint();
-                if(paintArea.contains(clickPt)){
+                if(movablePaintArea.contains(clickPt)){
                     movingPaint = true;
-                    xOffset = clickPt.x - paintArea.x;
-                    yOffset = clickPt.y - paintArea.y;
+                    xOffset = clickPt.x - movablePaintArea.x;
+                    yOffset = clickPt.y - movablePaintArea.y;
                     mouseEvent.consume();
+                }
+                else if(resetPaint.contains(clickPt)){
+                    movablePaintArea.setLocation(new Point(0,265));
                 }
                 break;
 
@@ -33,8 +37,6 @@ public class DraggablePaintHandler extends BotMouseListener {
 
                 break;
         }
-
-
     }
 
     @Override
@@ -42,14 +44,17 @@ public class DraggablePaintHandler extends BotMouseListener {
         super.mouseDragged(mouseEvent);
         if(movingPaint){
             Point mousePos = mouseEvent.getPoint();
-            paintArea.x = mousePos.x - xOffset;
-            paintArea.y = mousePos.y - yOffset;
+            movablePaintArea.x = mousePos.x - xOffset;
+            movablePaintArea.y = mousePos.y - yOffset;
         }
 
     }
 
-    public Rectangle getPaintArea() {
-        return paintArea;
+    public Rectangle getMovablePaintArea() {
+        return movablePaintArea;
     }
 
+    public Rectangle getResetPaint() {
+        return resetPaint;
+    }
 }
