@@ -34,18 +34,18 @@ public class ActiveNode extends MidDreamNode {
     /*
     This is called when AFKNode switches back to ActiveNode
      */
-    public int resumeActiveNode() throws InterruptedException {
+    @Override
+    public void resumeNode(int onLoopsB4Switch) {
+        script.log("switching to Active Node");
         doPrayerFlick = true;
-        onLoopsB4Switch = 100;
-        return executeNode();
+        this.onLoopsB4Switch = onLoopsB4Switch;
     }
 
     @Override
     public int executeNode() throws InterruptedException {
         ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.ACTIVE_NODE);
-        overloadFailSafe();
         checkAbsorption();
-        if(hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS) > 1){
+        if(script.getSkills().getDynamic(Skill.HITPOINTS) > 1){
             if(!checkOverload()){
                 decreaseHP();
             }
@@ -53,13 +53,14 @@ public class ActiveNode extends MidDreamNode {
 
         rapidHealFlick(); //rapid heal only flicks if doPrayerFlick variable is true, else it does nothing
         if(!doPrayerFlick && ThreadLocalRandom.current().nextBoolean() && !powerSurgeActive){
-            hostScriptReference.getMouse().moveOutsideScreen();
+            script.getMouse().moveOutsideScreen();
         }
 
         ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.AFKING);
         onLoopsB4Switch--;
         ScriptStatusPainter.setOnLoopsB4Switch(onLoopsB4Switch);
-        return (int) Statics.randomNormalDist(1000, 500);
+        MethodProvider.sleep(Statics.randomNormalDist(1000, 500));
+        return 500;
     }
 
     @Override
@@ -71,17 +72,16 @@ public class ActiveNode extends MidDreamNode {
     private void rapidHealFlick() throws InterruptedException {
         if(doPrayerFlick){
             ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.RAPID_HEAL_FLICK);
-            int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
-            //(currentHealth <= 49 || !doesPlayerHaveOverloadsLeft()) player still guzzles to 1 if over 49 and overloads are not in inventory
+            int currentHealth = script.getSkills().getDynamic(Skill.HITPOINTS);
+
             if(currentHealth > 1 && (currentHealth <= 49 || !doesPlayerHaveOverloadsLeft())){
                 decreaseHP();
             }
 
             if(currentHealth == 1){
-                int currentPrayerPts = hostScriptReference.getSkills().getDynamic(Skill.PRAYER);
+                int currentPrayerPts = script.getSkills().getDynamic(Skill.PRAYER);
                 if(currentPrayerPts > 0){
-                    //hostScriptReference.log("PRAYER FLICK: flicking prayer, doPrayerFlick -> false");
-                    Prayer prayer = hostScriptReference.getPrayer();
+                    Prayer prayer = script.getPrayer();
                     prayer.open();
                     prayer.set(PrayerButton.RAPID_HEAL, true);
                     MethodProvider.sleep(Statics.randomNormalDist(1000, 200));
@@ -100,9 +100,9 @@ public class ActiveNode extends MidDreamNode {
             ScriptStatusPainter.startPrayerFlickTimer((nextFlickMs+999)/1000);
 
             if(ThreadLocalRandom.current().nextBoolean()){
-                openInventoryTab();
+                script.getTabs().open(Tab.INVENTORY);
             }
-            hostScriptReference.getMouse().moveOutsideScreen();
+            script.getMouse().moveOutsideScreen();
         }
 
     }

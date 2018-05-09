@@ -19,7 +19,7 @@ import java.awt.*;
 @ScriptManifest(author = "PayPalMeRSGP", name = MainScript.BUILD_NUM + " " + MainScript.SCRIPT_NAME, info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MessageListener {
     static final String SCRIPT_NAME = "Imperishable Nightmare-Zone";
-    static final int BUILD_NUM = 0;
+    static final int BUILD_NUM = 5;
 
     private MarkovNodeExecutor executor;
     private DraggablePaintHandler paintHandler;
@@ -136,6 +136,7 @@ public class MainScript extends Script implements MessageListener {
         executor.addNormalEdgeToNode(afkNode, afkNode, 1);*/
         executor.addNormalEdgeToNode(prepNode, activeNode, 1);
         executor.addNormalEdgeToNode(activeNode, activeNode, 1);
+        executor.addNormalEdgeToNode(afkNode, afkNode, 1);
         executor.addCondEdgeToNode(activeNode, afkNode, 1);
         executor.addCondEdgeToNode(afkNode, activeNode, 1);
 

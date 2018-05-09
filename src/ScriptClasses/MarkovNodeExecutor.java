@@ -1,5 +1,7 @@
 package ScriptClasses;
 
+import Nodes.MidDreamNodes.MidDreamNode;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.ThreadLocalRandom;
@@ -8,7 +10,8 @@ public class MarkovNodeExecutor {
 
     public interface ExecutableNode {
         int executeNode() throws InterruptedException;
-        boolean doConditionalTraverse();
+        boolean doConditionalTraverse(); //used by MarkovNodeExecutor to indicate whether a special node traversal is requested
+        void resumeNode(int onLoopsB4Switch); //after a special traversal, this method is used to set up the to-execute node variable flags.
     }
 
     private class NodeEdge {
@@ -104,8 +107,10 @@ public class MarkovNodeExecutor {
      */
     public int executeNodeThenTraverse() throws InterruptedException {
         int onLoopSleepTime = current.executeNode();
-        if(current.doConditionalTraverse())
+        if(current.doConditionalTraverse()) {
             conditionalTraverse();
+            current.resumeNode(150);
+        }
         else{
             normalTraverse();
         }

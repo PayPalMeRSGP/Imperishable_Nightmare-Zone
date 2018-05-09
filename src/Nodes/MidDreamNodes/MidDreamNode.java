@@ -11,61 +11,51 @@ import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ThreadLocalRandom;
 
-public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode {
-    final static String DRINK = "Drink";
-    final static String GUZZLE = "Guzzle";
-    final static String FEEL = "Feel";
+import static ScriptClasses.Util.Statics.DRINK;
+import static ScriptClasses.Util.Statics.FEEL;
+import static ScriptClasses.Util.Statics.GUZZLE;
 
-    final Script hostScriptReference;
+public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode {
+    final Script script;
     private int absorptionMinLimit; //determines when to re-pot absorptions
     private int potionMinBoost; //if using super ranging, determines when to re-pot
 
     //flags to do certain actions
     private boolean playerDied;
     private boolean doOverload;
-    private boolean doCameraRotation;
     private boolean noPrayer;
     boolean powerSurgeActive;
 
     //onLoop calls before switching AFK_NODE <-> Active
     int onLoopsB4Switch;
 
-    MidDreamNode(Script hostScriptReference){
-        this.hostScriptReference = hostScriptReference;
+    MidDreamNode(Script script){
+        this.script = script;
         this.absorptionMinLimit =  ThreadLocalRandom.current().nextInt(200, 400);
         this.potionMinBoost = ThreadLocalRandom.current().nextInt(3, 7); //generate potion min boost, used to determine next re-pot
         this.doOverload = true;
         this.noPrayer = false;
     }
 
-    void overloadFailSafe(){
-        if(!doOverload && hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS) > 50){ //redundant check as onMessage can rarely not work.
-            doOverload = true;
-            hostScriptReference.log("redundant check set doOverload -> true");
-        }
-    }
-
     void checkAbsorption() throws InterruptedException {
-        Inventory inv = hostScriptReference.getInventory();
+        Inventory inv = script.getInventory();
         int absorptionLvl = getAbsorptionLvl();
         if(absorptionLvl < 0){
-            RS2Widget absorptionWidget = hostScriptReference.getWidgets().get(202, 1, 9);
+            RS2Widget absorptionWidget = script.getWidgets().get(202, 1, 9);
             if(absorptionWidget != null){
-                boolean absorptionsVisable = absorptionWidget.isVisible();
-                if(!absorptionsVisable && playerDied){
-                    hostScriptReference.log("absorptions widget is invisible, likely outside dream, stopping");
-                    hostScriptReference.stop(false);
+                boolean absorptionsVisible = absorptionWidget.isVisible();
+                if(!absorptionsVisible && playerDied){
+                    script.log("absorptions widget is invisible, likely outside dream, stopping");
+                    script.stop(false);
                 }
             }
         }
         //absorptionLvl >= 0 is because getAbsorptionLvl returns -1 in error cases, such as the widget not being visible.
         if(absorptionLvl < absorptionMinLimit && absorptionLvl >= -1){
             ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.ABSORPTIONS);
-            openInventoryTab();
+            script.getTabs().open(Tab.INVENTORY);
             while(absorptionLvl < absorptionMinLimit && doesPlayerHaveAbsorptionsLeft()){
                 inv.interact(DRINK, Statics.ABSORPTION_POTION_1_ID, Statics.ABSORPTION_POTION_2_ID,
                         Statics.ABSORPTION_POTION_3_ID, Statics.ABSORPTION_POTION_4_ID);
@@ -82,14 +72,13 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
         }
     }
 
-
     boolean drinkSuperRangingPotion(){
-        openInventoryTab();
-        int currentRangeBoost = hostScriptReference.getSkills().getDynamic(Skill.RANGED) - hostScriptReference.getSkills().getStatic(Skill.RANGED);
+        script.getTabs().open(Tab.INVENTORY);
+        int currentRangeBoost = script.getSkills().getDynamic(Skill.RANGED) - script.getSkills().getStatic(Skill.RANGED);
         if(doesPlayerHaveSuperRangePotsLeft() && currentRangeBoost < potionMinBoost){
-            Inventory inv = hostScriptReference.getInventory();
+            Inventory inv = script.getInventory();
             this.potionMinBoost = ThreadLocalRandom.current().nextInt(3, 7);
-            return inv.interact(Statics.DRINK, Statics.SUPER_RANGING_4_ID, Statics.SUPER_RANGING_3_ID,
+            return inv.interact(DRINK, Statics.SUPER_RANGING_4_ID, Statics.SUPER_RANGING_3_ID,
                     Statics.SUPER_RANGING_2_ID, Statics.SUPER_RANGING_1_ID);
         }
         return false;
@@ -97,11 +86,11 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
 
     boolean checkOverload() {
         boolean interacted = false;
-        if(doOverload && doesPlayerHaveOverloadsLeft()){
+        if((doOverload || script.getSkills().getDynamic(Skill.HITPOINTS) > 50) && doesPlayerHaveOverloadsLeft()){
             ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.OVERLOADING);
             //while hp is being depleted from overload it is possible to lose alot of absorptions
             Prayer prayer = Statics.hostScriptReference.getPrayer();
-            int currentPrayerPts = hostScriptReference.getSkills().getDynamic(Skill.PRAYER);
+            int currentPrayerPts = script.getSkills().getDynamic(Skill.PRAYER);
             boolean didMeleePrayer = false;
             if(currentPrayerPts > 0){
                 prayer.open();
@@ -112,8 +101,8 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
             else{
                 noPrayer = true;
             }
-            openInventoryTab();
-            Inventory inv = hostScriptReference.getInventory();
+            script.getTabs().open(Tab.INVENTORY);
+            Inventory inv = script.getInventory();
             interacted = inv.interact(DRINK, Statics.OVERLOAD_POTION_1_ID, Statics.OVERLOAD_POTION_2_ID,
                     Statics.OVERLOAD_POTION_3_ID, Statics.OVERLOAD_POTION_4_ID);
 
@@ -121,12 +110,12 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
                 ScriptStatusPainter.startOverloadTimer();
             }
 
-            int startingHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
+            int startingHealth = script.getSkills().getDynamic(Skill.HITPOINTS);
             int estimatedHealthAfterOverload = startingHealth - 51;
             new ConditionalSleep(7000, 500){
                 @Override
                 public boolean condition() {
-                    int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
+                    int currentHealth = script.getSkills().getDynamic(Skill.HITPOINTS);
                     int difference = Math.abs(estimatedHealthAfterOverload - currentHealth);
                     return difference < 5;
                 }
@@ -135,102 +124,61 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
                 prayer.set(PrayerButton.PROTECT_FROM_MELEE, false);
             }
             doOverload = false;
-            hostScriptReference.log("doOverload -> false (drank overload)");
+            script.log("doOverload -> false (drank overload)");
         }
         return interacted;
     }
 
     void decreaseHP() throws InterruptedException {
-        int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
+        int currentHealth = script.getSkills().getDynamic(Skill.HITPOINTS);
         if(currentHealth > 50 || doOverload){
             return;
         }
         //do not reduce hp if overload is about to run out. Hp reduction and overload restore may happen similtaneously, resulting in going under 50hp
         while(currentHealth > 1 && ScriptStatusPainter.getOverloadSecondsLeft() > 5){
             ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.GUZZLING_ROCKCAKES);
-            Inventory inv = hostScriptReference.getInventory();
+            Inventory inv = script.getInventory();
 
-            if(inv.contains(Statics.DWARVEN_ROCK_CAKE_ID)){
-                inv.interact(GUZZLE, Statics.DWARVEN_ROCK_CAKE_ID);
+            if(inv.contains(Statics.ROCK_CAKE_ID)){
+                inv.interact(GUZZLE, Statics.ROCK_CAKE_ID);
             }
             else if(inv.contains(Statics.LOCATOR_ORB_ID)){
                 inv.interact(FEEL, Statics.LOCATOR_ORB_ID);
             }
             else{
-                hostScriptReference.log("locator orb or rock cake not found");
-                hostScriptReference.stop(false);
+                script.log("locator orb or rock cake not found");
+                script.stop(false);
             }
             MethodProvider.sleep(Statics.randomNormalDist(Statics.RS_GAME_TICK_MS, 60.0));
-            currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
+            currentHealth = script.getSkills().getDynamic(Skill.HITPOINTS);
         }
-    }
-
-    void randomCameraYawRotation(){
-        if(doCameraRotation){
-            Camera camera = hostScriptReference.getCamera();
-            int yaw = ThreadLocalRandom.current().nextInt(0, 361);
-            camera.moveYaw(yaw);
-            doCameraRotation = false;
-            hostScriptReference.log("CAMERA ROTATION: doCameraRotation -> false");
-        }
-        else{
-            //1200000ms = 20mins
-            int delay = (int) Statics.randomNormalDist(1200000, 300000);
-            hostScriptReference.log("CAMERA ROTATION: doCameraRotation -> true in " + delay/1000 + "s");
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    doCameraRotation = true;
-                    hostScriptReference.log("CAMERA ROTATION: doCameraRotation -> true");
-                }
-            }, delay);
-        }
-
-    }
-
-    @SuppressWarnings("EmptyMethod")
-    void handleSpecialAttack() {
-
     }
 
     private boolean walkToCorner() {
-        int corner = ThreadLocalRandom.current().nextInt(0, 4);
+        boolean useSECorner = ThreadLocalRandom.current().nextBoolean();
         WalkingEvent walk;
-        switch(corner){
-            case 0: //SE corner
-                walk = setUpWalker(63, 48);
-                break;
-            case 1: //SW corner
-                walk = setUpWalker(32, 48);
-                break;
-            case 2: //NW corner
-                walk = setUpWalker(32, 48);
-                break;
-            case 3: //NE corner
-                walk = setUpWalker(32, 48);
-                break;
-            default:
-                throw new UnsupportedOperationException("hit default in walkToCorner");
-        }
-        if(walk != null){
-            hostScriptReference.execute(walk);
-            final boolean[] finished = new boolean[1];
-            new ConditionalSleep(20000) {
-                @Override
-                public boolean condition() {
-                    finished[0] = walk.hasFinished();
-                    return finished[0];
-                }
-            }.sleep();
-            return finished[0];
-        }
-        return false;
+        if(useSECorner)
+            walk = setUpWalker(63, 48);
+        else
+            walk = setUpWalker(32, 48);
+
+        script.execute(walk);
+        final boolean[] finished = new boolean[1];
+        new ConditionalSleep(20000) {
+            @Override
+            public boolean condition() {
+                finished[0] = walk.hasFinished();
+                return finished[0];
+            }
+        }.sleep();
+        return finished[0];
+
     }
 
     private WalkingEvent setUpWalker(int localX, int localY){
-        int actualX = hostScriptReference.getMap().getBaseX() + localX;
-        int actualY = hostScriptReference.getMap().getBaseY() + localY;
-        int z = hostScriptReference.myPlayer().getPosition().getZ();
+        int actualX = script.getMap().getBaseX() + localX;
+        int actualY = script.getMap().getBaseY() + localY;
+        int z = script.myPlayer().getPosition().getZ();
         WalkingEvent walk = new WalkingEvent(new Position(actualX, actualY, z));
         walk.setMiniMapDistanceThreshold(5);
         walk.setOperateCamera(true);
@@ -238,33 +186,26 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
         return walk;
     }
 
-    void openInventoryTab(){
-        Tabs tab = hostScriptReference.getTabs();
-        if(tab.getOpen() != Tab.INVENTORY){
-            tab.open(Tab.INVENTORY);
-        }
-    }
-
     private boolean doesPlayerHaveAbsorptionsLeft(){
-        Inventory inv = hostScriptReference.getInventory();
+        Inventory inv = script.getInventory();
         return inv.contains(Statics.ABSORPTION_POTION_1_ID) || inv.contains(Statics.ABSORPTION_POTION_2_ID)
                 || inv.contains(Statics.ABSORPTION_POTION_3_ID) || inv.contains(Statics.ABSORPTION_POTION_4_ID);
     }
 
     boolean doesPlayerHaveOverloadsLeft(){
-        Inventory inv = hostScriptReference.getInventory();
+        Inventory inv = script.getInventory();
         return inv.contains(Statics.OVERLOAD_POTION_1_ID) || inv.contains(Statics.OVERLOAD_POTION_2_ID)
                 || inv.contains(Statics.OVERLOAD_POTION_3_ID) || inv.contains(Statics.OVERLOAD_POTION_4_ID);
     }
 
     private boolean doesPlayerHaveSuperRangePotsLeft(){
-        Inventory inv = hostScriptReference.getInventory();
+        Inventory inv = script.getInventory();
         return inv.contains(Statics.SUPER_RANGING_1_ID) || inv.contains(Statics.SUPER_RANGING_2_ID)
                 || inv.contains(Statics.SUPER_RANGING_3_ID) || inv.contains(Statics.SUPER_RANGING_4_ID);
     }
 
     private int getAbsorptionLvl() {
-        RS2Widget widget = hostScriptReference.getWidgets().get(202, 1, 9);
+        RS2Widget widget = script.getWidgets().get(202, 1, 9);
         if(widget != null && widget.isVisible() && widget.getMessage() != null) {
             int absorptionLvl = Integer.parseInt(widget.getMessage().replace(",", ""));
             return Integer.parseInt(widget.getMessage().replace(",", ""));

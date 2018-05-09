@@ -28,13 +28,14 @@ public class Statics {
     public static final int SUPER_RANGING_3_ID = 11723;
     public static final int SUPER_RANGING_2_ID = 11724;
     public static final int SUPER_RANGING_1_ID = 11725;
-    public static final int DWARVEN_ROCK_CAKE_ID = 7510;
+    public static final int ROCK_CAKE_ID = 7510;
     public static final int LOCATOR_ORB_ID = 22081;
     //npc
     public static final int DOMINIC_ONION_ID = 1120;
     //actions
     public final static String DRINK = "Drink";
     public final static String GUZZLE = "Guzzle";
+    public final static String FEEL = "Feel";
     //area
     public final static Area OUTSIDE_NMZ = new Area(2604, 3111, 2614, 3119);
     //parameters from GUI

@@ -4,6 +4,7 @@ import ScriptClasses.MarkovNodeExecutor;
 import ScriptClasses.Paint.ScriptStatusPainter;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.ui.*;
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -23,9 +24,10 @@ public class AFKNode extends MidDreamNode {
         this.hpMaxLimit = ThreadLocalRandom.current().nextInt(2, 5);
     }
 
-    public int resumeAFKNode() throws InterruptedException {
-        onLoopsB4Switch = 100;
-        return executeNode();
+    @Override
+    public void resumeNode(int onLoopsB4Switch) {
+        script.log("switching to AFK Node");
+        this.onLoopsB4Switch = onLoopsB4Switch;
     }
 
     public static MarkovNodeExecutor.ExecutableNode getSingleton(Script hostScriptReference) {
@@ -38,18 +40,18 @@ public class AFKNode extends MidDreamNode {
     @Override
     public int executeNode() throws InterruptedException {
         ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.AFK_NODE);
-        overloadFailSafe();
 
-        if(hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS) > hpMaxLimit){
+        if(script.getSkills().getDynamic(Skill.HITPOINTS) > hpMaxLimit){
             checkOverload();
             decreaseHP();
             this.hpMaxLimit = ThreadLocalRandom.current().nextInt(2, 5);
         }
-        hostScriptReference.getMouse().moveOutsideScreen();
+        script.getMouse().moveOutsideScreen();
         ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.AFKING);
         onLoopsB4Switch--;
         ScriptStatusPainter.setOnLoopsB4Switch(onLoopsB4Switch);
-        return (int) Statics.randomNormalDist(2000, 1000);
+        MethodProvider.sleep(Statics.randomNormalDist(1000, 500));
+        return 500;
     }
 
     @Override
