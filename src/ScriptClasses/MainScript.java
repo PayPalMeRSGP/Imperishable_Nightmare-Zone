@@ -4,34 +4,29 @@ import Nodes.CheatCaveNodes.AFKNode;
 import Nodes.CheatCaveNodes.ActiveNode;
 import Nodes.CheatCaveNodes.PrepNode;
 import ScriptClasses.Paint.DraggablePaintHandler;
-import ScriptClasses.Paint.CombatXPTracker;
-import ScriptClasses.Paint.MyPainter;
-import ScriptClasses.Paint.ScriptStatusPainter;
+import ScriptClasses.Paint.Paint;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.ui.Message;
-import org.osbot.rs07.canvas.paint.Painter;
 import org.osbot.rs07.listener.MessageListener;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
-import java.awt.*;
-
 @SuppressWarnings("unused")
 @ScriptManifest(author = "PayPalMeRSGP", name = MainScript.BUILD_NUM + " " + MainScript.SCRIPT_NAME, info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MessageListener {
-    static final String SCRIPT_NAME = "Imperishable Nightmare-Zone";
+    public static final String SCRIPT_NAME = "Imperishable Nightmare-Zone";
     static final int BUILD_NUM = 8;
 
     private MarkovNodeExecutor executor;
     private DraggablePaintHandler paintHandler;
-    private MyPainter paint;
+    private Paint paint;
 
     @Override
     public void onStart() throws InterruptedException {
         super.onStart();
         getBot().addMessageListener(this);
-        paint = new MyPainter(this);
+        paint = new Paint(this);
         markovChainSetup();
     }
 
@@ -49,8 +44,6 @@ public class MainScript extends Script implements MessageListener {
         ActiveNode activeNode = (ActiveNode) ActiveNode.getSingleton(this);
 
         executor = new MarkovNodeExecutor(prepNode);
-        /*executor.addNormalEdgeToNode(prepNode, afkNode, 1);
-        executor.addNormalEdgeToNode(afkNode, afkNode, 1);*/
         executor.addNormalEdgeToNode(prepNode, activeNode, 1);
         executor.addNormalEdgeToNode(activeNode, activeNode, 1);
         executor.addNormalEdgeToNode(afkNode, afkNode, 1);

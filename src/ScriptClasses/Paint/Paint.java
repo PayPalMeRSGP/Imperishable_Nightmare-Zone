@@ -1,5 +1,6 @@
 package ScriptClasses.Paint;
 
+import ScriptClasses.Util.Statics;
 import org.osbot.rs07.canvas.paint.Painter;
 import org.osbot.rs07.script.Script;
 
@@ -9,7 +10,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class MyPainter implements Painter{
+public class Paint implements Painter{
     private DraggablePaintHandler paintHandler;
     private CombatXPTracker tracker;
     private Script script;
@@ -20,7 +21,7 @@ public class MyPainter implements Painter{
     private static final String IMG_FOLDER = "/Imperishable_NMZ_Images";
 
     @SuppressWarnings("deprecation")
-    public MyPainter(Script script){
+    public Paint(Script script){
         this.script = script;
         paintHandler = new DraggablePaintHandler();
 
@@ -43,7 +44,7 @@ public class MyPainter implements Painter{
 
     @Override
     public void onPaint(Graphics2D g) {
-        Rectangle paintArea = paintHandler.getMovablePaintArea();
+        Rectangle paintArea = paintHandler.getXpPaint();
         g.setColor(TRANS_GRAY);
         g.fillRect(paintArea.x, paintArea.y, paintArea.width, paintArea.height);
 
@@ -120,24 +121,24 @@ public class MyPainter implements Painter{
 
     private void paintOverloadTimer(Graphics2D g){
         g.setColor(TRANS_GRAY);
-        g.fillRect(425, 40, 85, 35);
+        Rectangle paintArea = paintHandler.getOverloadPaint();
+        g.fillRect(paintArea.x, paintArea.y, paintArea.width, paintArea.height);
         if(overloadIcon != null){
-            g.drawImage(overloadIcon, null, 433, 42);
+            g.drawImage(overloadIcon, null, paintArea.x + 8, paintArea.y + 2);
         }
         g.setColor(Color.WHITE);
-        g.drawString(ScriptStatusPainter.getOverloadSecondsLeft()+"s",
-                475, 60);
+        g.drawString(ScriptStatusPainter.getOverloadSecondsLeft()+"s", paintArea.x + 50, paintArea.y + 20);
     }
 
     private void paintRapidHealTimer(Graphics2D g){
         g.setColor(TRANS_GRAY);
-        g.fillRect(425, 80, 85, 35);
+        Rectangle paintArea = paintHandler.getPrayerFlickPaint();
+        g.fillRect(paintArea.x, paintArea.y, paintArea.width, paintArea.height);
         if(rapidHealIcon != null){
-            g.drawImage(rapidHealIcon, null, 430, 85);
+            g.drawImage(rapidHealIcon, null, paintArea.x + 5, paintArea.y + 5);
         }
         g.setColor(Color.WHITE);
-        g.drawString(ScriptStatusPainter.getSecondsTilNextFlick()+"s",
-                475, 100);
+        g.drawString(ScriptStatusPainter.getSecondsTilNextFlick()+"s", paintArea.x + 50, paintArea.y + 20);
     }
 
     private void paintReset(Graphics2D g){
@@ -145,7 +146,7 @@ public class MyPainter implements Painter{
         Rectangle resetArea = paintHandler.getResetPaint();
         g.fillRect(resetArea.x, resetArea.y, resetArea.width, resetArea.height);
         g.setColor(Color.WHITE);
-        g.drawString("Reset Paint", resetArea.x + 10, resetArea.y + 15);
+        g.drawString("Reset Locations", resetArea.x + 10, resetArea.y + 15);
     }
 
     private void paintCursor(Graphics2D g){

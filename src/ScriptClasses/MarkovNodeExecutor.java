@@ -39,7 +39,7 @@ public class MarkovNodeExecutor {
     public void addNormalEdgeToNode(ExecutableNode u, ExecutableNode v, int edgeExecutionWeight){
         if(normalAdjMap.containsKey(u)){
             LinkedList<NodeEdge> edges = normalAdjMap.get(u);
-            if(edges == null){ //check if list of edges for u is instantiated, if not do so.
+            if(edges == null){
                 edges = new LinkedList<>();
 
             }
@@ -56,7 +56,7 @@ public class MarkovNodeExecutor {
     public void addCondEdgeToNode(ExecutableNode u, ExecutableNode v, int edgeExecutionWeight){
         if(conditionalAdjMap.containsKey(u)){
             LinkedList<NodeEdge> edges = conditionalAdjMap.get(u);
-            if(edges == null){ //check if list of edges for u is instantiated, if not do so.
+            if(edges == null){
                 edges = new LinkedList<>();
 
             }
