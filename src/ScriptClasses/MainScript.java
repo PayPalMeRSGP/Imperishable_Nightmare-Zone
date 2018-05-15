@@ -16,7 +16,7 @@ import org.osbot.rs07.script.ScriptManifest;
 @ScriptManifest(author = "PayPalMeRSGP", name = MainScript.BUILD_NUM + " " + MainScript.SCRIPT_NAME, info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MessageListener {
     public static final String SCRIPT_NAME = "Imperishable Nightmare-Zone";
-    static final int BUILD_NUM = 8;
+    static final int BUILD_NUM = 9;
 
     private MarkovNodeExecutor executor;
     private DraggablePaintHandler paintHandler;
@@ -36,8 +36,14 @@ public class MainScript extends Script implements MessageListener {
         return executor.executeNodeThenTraverse();
     }
 
+    @Override
+    public void onExit() throws InterruptedException {
+        super.onExit();
+        getPrayer().deactivateAll();
+    }
+
     private void markovChainSetup(){
-        Statics.setHostScriptReference(this);
+        Statics.setStaticScriptRef(this);
 
         PrepNode prepNode = (PrepNode) PrepNode.getSingleton(this);
         AFKNode afkNode = (AFKNode) AFKNode.getSingleton(this);

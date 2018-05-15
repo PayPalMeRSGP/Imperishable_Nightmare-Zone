@@ -9,6 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class MarkovNodeExecutor {
 
     public interface ExecutableNode {
+        boolean canExecute() throws InterruptedException;
         int executeNode() throws InterruptedException;
         boolean doConditionalTraverse(); //used by MarkovNodeExecutor to indicate whether a special node traversal is requested
     }
@@ -100,7 +101,10 @@ public class MarkovNodeExecutor {
     sleep times returns are implemented inside the executeNode() in each ExecutableNode instance
      */
     public int executeNodeThenTraverse() throws InterruptedException {
-        int onLoopSleepTime = current.executeNode();
+        int onLoopSleepTime = 0;
+        if(current.canExecute()){
+            onLoopSleepTime = current.executeNode();
+        }
         if(current.doConditionalTraverse()) {
             conditionalTraverse();
             if(current instanceof MidDreamNode)

@@ -5,6 +5,7 @@ import ScriptClasses.Paint.ScriptStatusPainter;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.*;
 import org.osbot.rs07.api.map.Position;
+import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.api.ui.*;
 import org.osbot.rs07.event.WalkingEvent;
 import org.osbot.rs07.script.MethodProvider;
@@ -26,7 +27,7 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
     boolean doOverload;
     boolean powerSurgeActive;
 
-    //onLoop calls before switching AFK_NODE <-> Active
+    //onLoop calls before switching AFK <-> Active
     int onLoopsB4Switch;
     /*
     totalLoops determines how many onLoop calls a cycle of Active and AFK nodes take.
@@ -54,11 +55,17 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
         this.activeNodeUsagePercent = activeNodeUsagePercent;
     }
 
+    @Override
+    public boolean canExecute() {
+        RS2Object exitPotion = script.getObjects().closestThatContains("Potion");
+        return exitPotion != null && exitPotion.getLocalX() == 52 && exitPotion.getLocalY() == 47;
+    }
+
     public abstract void resumeNode();
 
     static void randomizeTotalLoops(){
         MidDreamNode.totalLoops = (int) Statics.randomNormalDist(1000, 500);
-        hostScriptReference.log("Active -> AFK totalLoops: " + totalLoops);
+        staticScriptRef.log("Active -> AFK totalLoops: " + totalLoops);
     }
 
     void checkAbsorption() throws InterruptedException {
@@ -111,7 +118,7 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
         if((doOverload || script.getSkills().getDynamic(Skill.HITPOINTS) > 50) && doesPlayerHaveOverloadsLeft()){
             ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.OVERLOADING);
             //while hp is being depleted from overload it is possible to lose alot of absorptions
-            Prayer prayer = Statics.hostScriptReference.getPrayer();
+            Prayer prayer = Statics.staticScriptRef.getPrayer();
             int currentPrayerPts = script.getSkills().getDynamic(Skill.PRAYER);
             boolean didMeleePrayer = false;
             if(currentPrayerPts > 0){

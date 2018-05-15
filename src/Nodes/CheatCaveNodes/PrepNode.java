@@ -5,6 +5,7 @@ import ScriptClasses.Paint.ScriptStatusPainter;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.Inventory;
 import org.osbot.rs07.api.map.Position;
+import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.api.ui.Tab;
@@ -32,6 +33,12 @@ public class PrepNode implements MarkovNodeExecutor.ExecutableNode{
             singleton = new PrepNode(script);
         }
         return singleton;
+    }
+
+    @Override
+    public boolean canExecute() {
+        RS2Object exitPotion = script.getObjects().closestThatContains("Potion");
+        return exitPotion != null && exitPotion.getLocalX() == 52 && exitPotion.getLocalY() == 47;
     }
 
     @Override

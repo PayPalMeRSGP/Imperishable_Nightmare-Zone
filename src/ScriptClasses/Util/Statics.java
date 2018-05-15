@@ -3,9 +3,7 @@ package ScriptClasses.Util;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.script.Script;
 
-import java.awt.*;
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class Statics {
 
@@ -43,12 +41,12 @@ public class Statics {
     public static boolean usingSuperRanging;
     public static boolean usingAbsorptions;
 
-    public static Script hostScriptReference;
+    public static Script staticScriptRef;
 
     private Statics(){} //meant to be a constant provider, no constructor
 
-    public static void setHostScriptReference(Script ref){
-        hostScriptReference = ref;
+    public static void setStaticScriptRef(Script ref){
+        staticScriptRef = ref;
     }
 
     public static long randomNormalDist(double mean, double stddev){
