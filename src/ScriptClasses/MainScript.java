@@ -34,7 +34,8 @@ public class MainScript extends Script implements MessageListener {
     @Override
     public int onLoop() throws InterruptedException {
         paint.determineCombatStyle();
-        return executor.executeNodeThenTraverse();
+        //return executor.executeNodeThenTraverse();
+        return 1000;
     }
 
     @Override

@@ -9,7 +9,7 @@ public class CombatXPTracker extends API{
     public enum CombatStyle {
         ATK, STR, DEF, CTRL, RNG
     }
-    private CombatStyle style;
+    private CombatStyle lastStyle;
     private long startTime;
     private boolean moduleReady;
 
@@ -19,10 +19,7 @@ public class CombatXPTracker extends API{
         exchangeContext(getBot());
         startTime = System.currentTimeMillis();
         getExperienceTracker().start(Skill.HITPOINTS);
-        getExperienceTracker().start(Skill.ATTACK);
-        getExperienceTracker().start(Skill.STRENGTH);
-        getExperienceTracker().start(Skill.DEFENCE);
-        getExperienceTracker().start(Skill.RANGED);
+
     }
 
     public void setModuleReady() {
@@ -38,22 +35,46 @@ public class CombatXPTracker extends API{
                     || equippedWeapon.contains("throwing") || equippedWeapon.contains("dart")
                     || equippedWeapon.contains("knife");
             if(isRanging){
-                style =  CombatStyle.RNG;
+                if(lastStyle != CombatStyle.RNG){
+                    log("starting ranged tracker");
+                    getExperienceTracker().start(Skill.RANGED);
+                    lastStyle =  CombatStyle.RNG;
+                }
+
                 return;
             }
 
             switch (s){
                 case 0:
-                    style = CombatStyle.ATK;
+                    if(lastStyle != CombatStyle.ATK){
+                        log("starting attack tracker");
+                        getExperienceTracker().start(Skill.ATTACK);
+                        lastStyle = CombatStyle.ATK;
+                    }
                     break;
                 case 1:
-                    style = CombatStyle.STR;
+                    if(lastStyle != CombatStyle.STR){
+                        log("starting strength tracker");
+                        getExperienceTracker().start(Skill.STRENGTH);
+                        lastStyle = CombatStyle.STR;
+                    }
                     break;
                 case 2:
-                    style = CombatStyle.CTRL;
+                    if(lastStyle != CombatStyle.CTRL){
+                        log("starting controlled tracker");
+                        getExperienceTracker().start(Skill.ATTACK);
+                        getExperienceTracker().start(Skill.STRENGTH);
+                        getExperienceTracker().start(Skill.DEFENCE);
+                        lastStyle = CombatStyle.CTRL;
+                    }
+
                     break;
                 case 3:
-                    style = CombatStyle.DEF;
+                    if(lastStyle != CombatStyle.DEF){
+                        log("starting defence tracker");
+                        getExperienceTracker().start(Skill.DEFENCE);
+                        lastStyle = CombatStyle.DEF;
+                    }
                     break;
                 default:
                     log("WARNING: hit default case in setCombatStyle switch statement");
@@ -62,17 +83,17 @@ public class CombatXPTracker extends API{
 
     }
 
-    public CombatStyle getStyle() {
-        return style;
+    public CombatStyle getLastStyle() {
+        return lastStyle;
     }
 
     public long getRunTime(){
         return System.currentTimeMillis() - startTime;
     }
 
-    //for not using controlled style
+    //for not using controlled lastStyle
     public int getTrainingSkillLvl() {
-        switch(style){
+        switch(lastStyle){
             case ATK:
                 return getAtkLvl();
             case STR:
@@ -82,12 +103,11 @@ public class CombatXPTracker extends API{
             case RNG:
                 return getRngLvl();
         }
-        log("error in getTrainingSkillLvl, using controlled?");
         return 0;
     }
 
     public int getTrainingXpGained() {
-        switch(style){
+        switch(lastStyle){
             case ATK:
                 return getAtkXpGained();
             case STR:
@@ -97,12 +117,11 @@ public class CombatXPTracker extends API{
             case RNG:
                 return getRngXpGained();
         }
-        log("error in getTrainingXpGained, using controlled?");
         return 0;
     }
 
     public long getTrainingTTL() {
-        switch(style){
+        switch(lastStyle){
             case ATK:
                 return getAtkTTL();
             case STR:
@@ -112,12 +131,11 @@ public class CombatXPTracker extends API{
             case RNG:
                 return getRngTTL();
         }
-        log("error in getTrainingTTL, using controlled?");
         return 0;
     }
 
     public int getTrainingXPH() {
-        switch(style){
+        switch(lastStyle){
             case ATK:
                 return getAtkXPH();
             case STR:
@@ -127,11 +145,10 @@ public class CombatXPTracker extends API{
             case RNG:
                 return getRngXPH();
         }
-        log("error in getTrainingXPH, using controlled?");
         return 0;
     }
 
-    //for using controlled style
+    //for using controlled lastStyle
     public int[] getAtkStrDefLvls(){
         return new int[]{getAtkLvl(), getStrLvl(), getDefLvl()};
     }
@@ -219,9 +236,5 @@ public class CombatXPTracker extends API{
     public int getHpXPH(){
         return getExperienceTracker().getGainedXPPerHour(Skill.HITPOINTS);
     }
-
-
-
-
 
 }

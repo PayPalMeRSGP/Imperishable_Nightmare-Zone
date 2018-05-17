@@ -1,6 +1,5 @@
 package ScriptClasses.Paint;
 
-import ScriptClasses.Util.Statics;
 import org.osbot.rs07.canvas.paint.Painter;
 import org.osbot.rs07.script.Script;
 
@@ -48,9 +47,9 @@ public class Paint implements Painter{
         g.setColor(TRANS_GRAY);
         g.fillRect(paintArea.x, paintArea.y, paintArea.width, paintArea.height);
 
-        if(tracker != null && tracker.getStyle() != null){
+        if(tracker != null && tracker.getLastStyle() != null){
             g.setColor(Color.WHITE);
-            if(tracker.getStyle() == CombatXPTracker.CombatStyle.CTRL)
+            if(tracker.getLastStyle() == CombatXPTracker.CombatStyle.CTRL)
                 paintCtrlXp(paintArea, g);
             else
                 paintStdXp(paintArea, g);
@@ -100,7 +99,7 @@ public class Paint implements Painter{
         g.drawString("Runtime: " + formatTime(tracker.getRunTime()),
                 paintArea.x + 10, paintArea.y + 15);
 
-        g.drawString(tracker.getStyle().toString() + " LVL: " + formatValue(tracker.getTrainingSkillLvl())
+        g.drawString(tracker.getLastStyle().toString() + " LVL: " + formatValue(tracker.getTrainingSkillLvl())
                         + " XP: " + formatValue(tracker.getTrainingXpGained())
                         + " TTL: " + formatTime(tracker.getTrainingTTL())
                         + " XPH: " + formatValue(tracker.getTrainingXPH()),

@@ -59,4 +59,8 @@ public class Statics {
         MethodProvider.sleep(randomNormalDist(750, 250));
     }
 
+    public static void longRandomPause() throws InterruptedException {
+        MethodProvider.sleep(randomNormalDist(4000, 500));
+    }
+
 }

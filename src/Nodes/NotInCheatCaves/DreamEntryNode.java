@@ -17,17 +17,9 @@ import org.osbot.rs07.utility.ConditionalSleep;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
-    private final static String DOMINIC_ONION = "Dominic Onion",
-            DREAM_POTION = "Potion",
-            DREAM = "Dream",
-            DRINK = "Drink",
-            CORRECT_DIALOG_OPTION = "Previous: Customisable Rumble (hard)",
-            DONT_CANCEL = "No, don't cancel it.";
 
     private static MarkovNodeExecutor.ExecutableNode singleton;
-
     private Script script;
-
     private static final Area NMZ = new Area(2601, 3116, 2606, 3113);
 
     private int numAbsorptions, numOverloads;
@@ -47,7 +39,7 @@ public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
 
     @Override
     public boolean canExecute() throws InterruptedException {
-        NPC dominicOnion = script.getNpcs().closestThatContains(DOMINIC_ONION);
+        NPC dominicOnion = script.getNpcs().closestThatContains("Dominic Onion");
         return dominicOnion != null && dominicOnion.exists();
     }
 
@@ -60,7 +52,8 @@ public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
                 if(hasEnoughGP()){
                     if(dominicInteraction()){
                         if(enterDream()){
-                            return 1000;
+                            Statics.longRandomPause();
+                            return 3000;
                         } else return stop("Script Error: error with entering dream interactions");
                     } else return stop("Script Error: error with dominic onion interaction");
                 } else return stop("Stopping: not enough RSGP for dream");
@@ -73,7 +66,8 @@ public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
                                 if(hasEnoughGP()){
                                     if(dominicInteraction()){
                                         if(enterDream()){
-                                            return 1000;
+                                            Statics.longRandomPause();
+                                            return 3000;
                                         } else return stop("Script Error: error with entering dream interactions");
                                     } else return stop("Script Error: error with dominic onion interaction");
                                 } else return stop("Stopping: not enough RSGP for dream");
@@ -86,8 +80,8 @@ public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
     }
 
     private boolean enterDream(){
-        RS2Object entryPotion = script.getObjects().closestThatContains(DREAM_POTION);
-        if(entryPotion != null && entryPotion.interact(DRINK)){
+        RS2Object entryPotion = script.getObjects().closestThatContains("Potion");
+        if(entryPotion != null && entryPotion.interact("Drink")){
             final RS2Widget[] accept = new RS2Widget[1];
             new ConditionalSleep(5000){
                 @Override
@@ -119,8 +113,8 @@ public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
     }
 
     private boolean dominicInteraction() throws InterruptedException {
-        NPC dominicOnion = script.getNpcs().closestThatContains(DOMINIC_ONION);
-        if(dominicOnion != null && dominicOnion.interact(DREAM)){
+        NPC dominicOnion = script.getNpcs().closestThatContains("Dominic Onion");
+        if(dominicOnion != null && dominicOnion.interact("Dream")){
             Dialogues dialogues = script.getDialogues();
             new ConditionalSleep(5000){
                 @Override
@@ -138,7 +132,7 @@ public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
 
         if(dialogues.inDialogue()){
             if(dialogues.isPendingOption()){
-                if(dialogues.selectOption(CORRECT_DIALOG_OPTION)){
+                if(dialogues.selectOption("Previous: Customisable Rumble (hard)")){
                     return dialogues.completeDialogue("Yes");
                 }
                 else{
@@ -151,7 +145,7 @@ public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
                     }
                 }
             }
-            else return dialogues.completeDialogue(DONT_CANCEL);
+            else return dialogues.completeDialogue("No, don't cancel it.");
         }
         return false;
     }
@@ -271,7 +265,7 @@ public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
     private int stop(String reason){
         script.log(reason);
         script.stop(false);
-        return 10000;
+        return 0;
     }
 
     @Override
