@@ -1,6 +1,7 @@
 package ScriptClasses.Util;
 
 import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
 import java.util.Random;
@@ -52,6 +53,10 @@ public class Statics {
     public static long randomNormalDist(double mean, double stddev){
         long debug = (long) ((new Random().nextGaussian() * stddev + mean));
         return Math.abs(debug); //in case we get a negative number
+    }
+
+    public static void shortRandomPause() throws InterruptedException {
+        MethodProvider.sleep(randomNormalDist(750, 250));
     }
 
 }

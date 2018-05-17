@@ -3,6 +3,7 @@ package ScriptClasses;
 import Nodes.CheatCaveNodes.AFKNode;
 import Nodes.CheatCaveNodes.ActiveNode;
 import Nodes.CheatCaveNodes.PrepNode;
+import Nodes.NotInCheatCaves.DreamEntryNode;
 import ScriptClasses.Paint.DraggablePaintHandler;
 import ScriptClasses.Paint.Paint;
 import ScriptClasses.Util.Statics;
@@ -16,7 +17,7 @@ import org.osbot.rs07.script.ScriptManifest;
 @ScriptManifest(author = "PayPalMeRSGP", name = MainScript.BUILD_NUM + " " + MainScript.SCRIPT_NAME, info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
 public class MainScript extends Script implements MessageListener {
     public static final String SCRIPT_NAME = "Imperishable Nightmare-Zone";
-    static final int BUILD_NUM = 9;
+    static final int BUILD_NUM = 11;
 
     private MarkovNodeExecutor executor;
     private DraggablePaintHandler paintHandler;
@@ -45,11 +46,13 @@ public class MainScript extends Script implements MessageListener {
     private void markovChainSetup(){
         Statics.setStaticScriptRef(this);
 
+        DreamEntryNode entryNode = (DreamEntryNode) DreamEntryNode.getSingleton(this, 14, 13);
         PrepNode prepNode = (PrepNode) PrepNode.getSingleton(this);
         AFKNode afkNode = (AFKNode) AFKNode.getSingleton(this);
         ActiveNode activeNode = (ActiveNode) ActiveNode.getSingleton(this);
 
-        executor = new MarkovNodeExecutor(prepNode);
+        executor = new MarkovNodeExecutor(entryNode);
+        executor.addNormalEdgeToNode(entryNode, prepNode, 1);
         executor.addNormalEdgeToNode(prepNode, activeNode, 1);
         executor.addNormalEdgeToNode(activeNode, activeNode, 1);
         executor.addNormalEdgeToNode(afkNode, afkNode, 1);

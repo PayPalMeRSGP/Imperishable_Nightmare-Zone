@@ -119,6 +119,9 @@ public class MarkovNodeExecutor {
     private void normalTraverse(){
         if(current != null){
             LinkedList<NodeEdge> edges = normalAdjMap.get(current);
+            if(edges == null){
+                throw new NullPointerException("edges is null, likely this node was not added into the graph.");
+            }
             if(edges.size() == 0){
                 return; //if no outgoing edges, current does not get changed therefore the same node will be repeated.
             }

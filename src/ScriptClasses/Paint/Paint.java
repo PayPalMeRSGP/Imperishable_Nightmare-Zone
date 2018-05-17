@@ -48,15 +48,12 @@ public class Paint implements Painter{
         g.setColor(TRANS_GRAY);
         g.fillRect(paintArea.x, paintArea.y, paintArea.width, paintArea.height);
 
-        if(tracker != null){
-            if(tracker.getStyle() != null){
-                g.setColor(Color.WHITE);
-                if(tracker.getStyle() == CombatXPTracker.CombatStyle.CTRL)
-                    paintCtrlXp(paintArea, g);
-                else
-                    paintStdXp(paintArea, g);
-
-            }
+        if(tracker != null && tracker.getStyle() != null){
+            g.setColor(Color.WHITE);
+            if(tracker.getStyle() == CombatXPTracker.CombatStyle.CTRL)
+                paintCtrlXp(paintArea, g);
+            else
+                paintStdXp(paintArea, g);
         }
         paintOverloadTimer(g);
         paintRapidHealTimer(g);
