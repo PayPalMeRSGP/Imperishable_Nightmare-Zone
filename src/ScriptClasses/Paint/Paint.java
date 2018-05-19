@@ -6,7 +6,6 @@ import org.osbot.rs07.script.Script;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 
 public class Paint implements Painter{
@@ -17,7 +16,7 @@ public class Paint implements Painter{
     private BufferedImage rapidHealIcon;
 
     private static final Color TRANS_GRAY = new Color(156,156,156, 127);
-    private static final String IMG_FOLDER = "/Imperishable_NMZ_Images";
+    private static final String IMG_FOLDER = "resources";
 
     @SuppressWarnings("deprecation")
     public Paint(Script script){
@@ -25,8 +24,8 @@ public class Paint implements Painter{
         paintHandler = new DraggablePaintHandler();
 
         try{
-            overloadIcon = ImageIO.read(new File(script.getDirectoryData() + IMG_FOLDER + "/overload.png"));
-            rapidHealIcon = ImageIO.read(new File(script.getDirectoryData() + IMG_FOLDER + "/rapid_heal.png"));
+            overloadIcon = ImageIO.read(script.getScriptResourceAsStream("resources/overload.png"));
+            rapidHealIcon = ImageIO.read(script.getScriptResourceAsStream("resources/rapid_heal.png"));
         }
         catch(IOException e){
             script.log(e);
