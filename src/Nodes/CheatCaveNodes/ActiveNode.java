@@ -1,6 +1,6 @@
-package Nodes.MidDreamNodes;
+package Nodes.CheatCaveNodes;
 
-import Nodes.ExecutableNode;
+import ScriptClasses.MarkovNodeExecutor;
 import ScriptClasses.Paint.ScriptStatusPainter;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.Prayer;
@@ -12,65 +12,90 @@ import java.util.TimerTask;
 import java.util.concurrent.ThreadLocalRandom;
 
 /*
-    ActiveNode node player flicks. It emulates a player more actively checking to ensure that his account is taking as minimum absorption damage as possible
+    ActiveNode node player flicks. It emulates a player more actively playing to ensure that his account is taking as minimum absorption damage as possible
     It does this by prayer-flicking
 */
 
 public class ActiveNode extends MidDreamNode {
     private boolean doPrayerFlick = true;
-    private static ExecutableNode singleton = null;
+    private static MarkovNodeExecutor.ExecutableNode singleton = null;
 
     private ActiveNode(Script hostScriptReference){
         super(hostScriptReference);
+        randomizeTotalLoops();
+        this.onLoopsB4Switch = (int) (totalLoops * activeNodeUsagePercent);
+        script.log("initial ActiveNode set to run for " + onLoopsB4Switch + " loops");
     }
 
-    public static ExecutableNode getSingleton(Script hostScriptReference) {
+    public static MarkovNodeExecutor.ExecutableNode getSingleton(Script hostScriptReference) {
         if(singleton == null){
             singleton = new ActiveNode(hostScriptReference);
         }
         return singleton;
     }
 
+    /*
+    This is called when AFKNode switches back to ActiveNode
+     */
+    @Override
+    public void resumeNode() {
+        MidDreamNode.randomizeTotalLoops();
+        this.onLoopsB4Switch = (int) (totalLoops * activeNodeUsagePercent);
+        doPrayerFlick = true;
+        doOverload = false;
+        script.log("resuming ActiveNode for " + onLoopsB4Switch + " loops");
+    }
+
     @Override
     public int executeNode() throws InterruptedException {
-        ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.ACTIVE);
-        overloadFailSafe();
-        handleAbsorptionLvl();
-        if(hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS) > 1){
-            if(!handleOverload()){
+        ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.ACTIVE_NODE);
+        script.getPrayer().deactivateAll();
+        checkAbsorption();
+        if(script.getSkills().getDynamic(Skill.HITPOINTS) > 1){
+            if(!checkOverload()){
                 decreaseHP();
             }
         }
 
         rapidHealFlick(); //rapid heal only flicks if doPrayerFlick variable is true, else it does nothing
-        //randomCameraYawRotation();
         if(!doPrayerFlick && ThreadLocalRandom.current().nextBoolean() && !powerSurgeActive){
-            hostScriptReference.getMouse().moveOutsideScreen();
+            script.getMouse().moveOutsideScreen();
         }
 
         ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.AFKING);
-        return (int) Statics.randomNormalDist(1000, 500);
+        onLoopsB4Switch--;
+        ScriptStatusPainter.setOnLoopsB4Switch(onLoopsB4Switch);
+        MethodProvider.sleep(Statics.randomNormalDist(1000, 500));
+        return 500;
     }
 
+    @Override
+    public boolean doConditionalTraverse() {
+        return onLoopsB4Switch <= 0;
+    }
 
     private void rapidHealFlick() throws InterruptedException {
+        if(noPrayer)
+            return;
         if(doPrayerFlick){
             ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.RAPID_HEAL_FLICK);
-            int currentHealth = hostScriptReference.getSkills().getDynamic(Skill.HITPOINTS);
-            //(currentHealth <= 49 || !doesPlayerHaveOverloadsLeft()) player still guzzles to 1 if over 49 and overloads are not in inventory
+            int currentHealth = script.getSkills().getDynamic(Skill.HITPOINTS);
+
             if(currentHealth > 1 && (currentHealth <= 49 || !doesPlayerHaveOverloadsLeft())){
                 decreaseHP();
             }
 
             if(currentHealth == 1){
-                int currentPrayerPts = hostScriptReference.getSkills().getDynamic(Skill.PRAYER);
+                int currentPrayerPts = script.getSkills().getDynamic(Skill.PRAYER);
                 if(currentPrayerPts > 0){
-                    //hostScriptReference.log("PRAYER FLICK: flicking prayer, doPrayerFlick -> false");
-                    Prayer prayer = hostScriptReference.getPrayer();
+                    Prayer prayer = script.getPrayer();
                     prayer.open();
                     prayer.set(PrayerButton.RAPID_HEAL, true);
                     MethodProvider.sleep(Statics.randomNormalDist(1000, 200));
                     prayer.set(PrayerButton.RAPID_HEAL, false);
+                }
+                else {
+                    noPrayer = true;
                 }
             }
             doPrayerFlick = false;
@@ -82,12 +107,12 @@ public class ActiveNode extends MidDreamNode {
                     doPrayerFlick = true;
                 }
             }, nextFlickMs);
-            ScriptStatusPainter.startPrayerFlickTimer((nextFlickMs+999)/1000); //round up to nearest second
+            ScriptStatusPainter.startPrayerFlickTimer((nextFlickMs+999)/1000);
 
             if(ThreadLocalRandom.current().nextBoolean()){
-                openInventoryTab();
+                script.getTabs().open(Tab.INVENTORY);
             }
-            hostScriptReference.getMouse().moveOutsideScreen();
+            script.getMouse().moveOutsideScreen();
         }
 
     }

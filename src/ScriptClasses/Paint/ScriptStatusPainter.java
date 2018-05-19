@@ -10,20 +10,6 @@ public class ScriptStatusPainter {
         PREPARING, AFKING, OVERLOADING, ABSORPTIONS, GUZZLING_ROCKCAKES, RAPID_HEAL_FLICK, SPECIAL_ATK
     }
 
-    //for paint to show current markov node
-    private static MarkovStatus currentMarkovStatus;
-    public enum MarkovStatus {
-        ACTIVE, AFK, PREP
-    }
-
-    public static MarkovStatus getCurrentMarkovStatus() {
-        return currentMarkovStatus;
-    }
-
-    public static void setCurrentMarkovStatus(MarkovStatus currentMarkovStatus) {
-        ScriptStatusPainter.currentMarkovStatus = currentMarkovStatus;
-    }
-
     public static void setCurrentScriptStatus(ScriptStatus currentScriptStatus) {
         ScriptStatusPainter.currentScriptStatus = currentScriptStatus;
     }
@@ -32,7 +18,32 @@ public class ScriptStatusPainter {
         return currentScriptStatus;
     }
 
+    //-----------------------------------------------------------------------------------------------------------------------
+    //for paint to show current node
+    private static MarkovStatus currentMarkovStatus;
+    private static int onLoopsB4Switch;
+    public enum MarkovStatus {
+        ACTIVE_NODE, AFK_NODE, PREP_NODE
+    }
 
+    public static int getOnLoopsB4Switch() {
+        return onLoopsB4Switch;
+    }
+
+    public static void setOnLoopsB4Switch(int onLoopsB4Switch) {
+        ScriptStatusPainter.onLoopsB4Switch = onLoopsB4Switch;
+    }
+
+    public static void setCurrentMarkovStatus(MarkovStatus currentMarkovStatus) {
+        ScriptStatusPainter.currentMarkovStatus = currentMarkovStatus;
+    }
+
+    public static MarkovStatus getCurrentMarkovStatus() {
+        return currentMarkovStatus;
+    }
+
+
+    //-----------------------------------------------------------------------------------------------------------------------
     //the below timers are only for paint, at the end of the timer the supposed action is not triggered by the below code
     //for overload timer in paint
     private static Timer overloadTimer;
@@ -59,6 +70,7 @@ public class ScriptStatusPainter {
         return overloadSecondsLeft;
     }
 
+    //-----------------------------------------------------------------------------------------------------------------------
     //for prayer flick timer in paint
     private static Timer prayerFlickTimer;
     private static int secondsTilNextFlick;
@@ -83,27 +95,4 @@ public class ScriptStatusPainter {
         return secondsTilNextFlick;
     }
 
-    //for markov node switch timer in paint
-    private static Timer markovSwitchTimer;
-    private static int secondsTilMarkovSwitch;
-
-    public static void startMarkovSwitchTimer(int s){
-        if(markovSwitchTimer != null){
-            markovSwitchTimer.cancel();
-        }
-        markovSwitchTimer = new Timer();
-        secondsTilMarkovSwitch = s;
-        markovSwitchTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                if(--secondsTilMarkovSwitch <= 0){
-                    markovSwitchTimer.cancel();
-                }
-            }
-        }, 0, 1000);
-    }
-
-    public static int getSecondsTilMarkovSwitch() {
-        return secondsTilMarkovSwitch;
-    }
 }
