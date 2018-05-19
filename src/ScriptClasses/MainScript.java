@@ -6,6 +6,7 @@ import Nodes.CheatCaveNodes.PrepNode;
 import Nodes.NotInCheatCaves.DreamEntryNode;
 import ScriptClasses.Paint.DraggablePaintHandler;
 import ScriptClasses.Paint.Paint;
+import ScriptClasses.Util.NoSuitableNodesException;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.listener.MessageListener;
@@ -14,10 +15,10 @@ import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
 @SuppressWarnings("unused")
-@ScriptManifest(author = "PayPalMeRSGP", name = MainScript.BUILD_NUM + " " + MainScript.SCRIPT_NAME, info = "NMZ_AFK_ALPHA, start inside dream", version = 0.1, logo = "")
+@ScriptManifest(author = "PayPalMeRSGP", name = MainScript.BUILD_NUM + " " + MainScript.SCRIPT_NAME, info = "NMZ_AFK_ALPHA", version = 0.1, logo = "")
 public class MainScript extends Script implements MessageListener {
     public static final String SCRIPT_NAME = "Imperishable Nightmare-Zone";
-    static final int BUILD_NUM = 11;
+    static final int BUILD_NUM = 12;
 
     private MarkovNodeExecutor executor;
     private DraggablePaintHandler paintHandler;
@@ -34,8 +35,13 @@ public class MainScript extends Script implements MessageListener {
     @Override
     public int onLoop() throws InterruptedException {
         paint.determineCombatStyle();
-        //return executor.executeNodeThenTraverse();
-        return 1000;
+        try {
+            return executor.executeThenTraverse();
+        } catch (NoSuitableNodesException e) {
+            e.printStackTrace();
+            stop();
+            return 0;
+        }
     }
 
     @Override

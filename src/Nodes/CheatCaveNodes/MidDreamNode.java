@@ -56,7 +56,7 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
     }
 
     @Override
-    public boolean canExecute() {
+    public final boolean canExecute() {
         RS2Object exitPotion = script.getObjects().closestThatContains("Potion");
         return exitPotion != null && exitPotion.getLocalX() == 52 && exitPotion.getLocalY() == 47;
     }

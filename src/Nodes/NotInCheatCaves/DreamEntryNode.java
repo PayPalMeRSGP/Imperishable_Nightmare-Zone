@@ -2,6 +2,7 @@ package Nodes.NotInCheatCaves;
 
 import ScriptClasses.MarkovNodeExecutor;
 import ScriptClasses.Util.Statics;
+import ScriptClasses.Util.SupplierWithCE;
 import org.osbot.rs07.api.Dialogues;
 import org.osbot.rs07.api.Inventory;
 import org.osbot.rs07.api.filter.Filter;
@@ -15,6 +16,8 @@ import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
 
@@ -58,15 +61,16 @@ public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
                     } else return stop("Script Error: error with dominic onion interaction");
                 } else return stop("Stopping: not enough RSGP for dream");
             }
-            else{
-                if(storeOverloads()){
-                    if(storeAbsorptions()){
-                        if(withdrawOverloads()){
-                            if(withdrawAbsorptions()){
-                                if(hasEnoughGP()){
-                                    if(dominicInteraction()){
-                                        if(enterDream()){
-                                            Statics.longRandomPause();
+            else{ //if current loadout of absorptions/overloads don't abide by what was set, re-withdraw and correct.
+                int failCount = 0;
+                if(executeStep(this::storeOverloads)){
+                    if(executeStep(this::storeAbsorptions)){
+                        if(executeStep(this::withdrawOverloads)){
+                            if(executeStep(this::withdrawAbsorptions)){
+                                if(executeStep(this::hasEnoughGP)){
+                                    if(executeStep(this::dominicInteraction)){
+                                        if(executeStep(this::enterDream)){
+                                            Statics.longRandomPause(); //Tip of the Spear ------------------------------------------------>
                                             return 3000;
                                         } else return stop("Script Error: error with entering dream interactions");
                                     } else return stop("Script Error: error with dominic onion interaction");
@@ -77,6 +81,17 @@ public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
                 } else return stop("Script Error: failure with storing overload interaction");
             }
         } else return stop("Stopping: Inventory does not contain a locator orb or rock cake! (Or it has both)");
+    }
+
+    //methods can return false, allow up to 5 times to execute properly.
+    private boolean executeStep(SupplierWithCE<Boolean, InterruptedException> f) throws InterruptedException{
+        boolean result = f.get();
+        int attempts = 0;
+        while(!result && attempts < 5){
+            result = f.get();
+            attempts++;
+        }
+        return result;
     }
 
     private boolean enterDream(){
@@ -156,7 +171,7 @@ public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
             Statics.shortRandomPause();
             if(overloadStorage != null && overloadStorage.interact("Store")) {
                 Dialogues dialogues = script.getDialogues();
-                new ConditionalSleep(5000){
+                new ConditionalSleep(10000){
                     @Override
                     public boolean condition() throws InterruptedException {
                         return dialogues.isPendingOption();
@@ -177,7 +192,7 @@ public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
             Statics.shortRandomPause();
             if(absorptionStorage != null && absorptionStorage.interact("Store")) {
                 Dialogues dialogues = script.getDialogues();
-                new ConditionalSleep(5000){
+                new ConditionalSleep(10000){
                     @Override
                     public boolean condition() throws InterruptedException {
                         return dialogues.isPendingOption();

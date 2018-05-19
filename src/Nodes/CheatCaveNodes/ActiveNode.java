@@ -12,7 +12,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ThreadLocalRandom;
 
 /*
-    ActiveNode node player flicks. It emulates a player more actively checking to ensure that his account is taking as minimum absorption damage as possible
+    ActiveNode node player flicks. It emulates a player more actively playing to ensure that his account is taking as minimum absorption damage as possible
     It does this by prayer-flicking
 */
 
@@ -49,6 +49,7 @@ public class ActiveNode extends MidDreamNode {
     @Override
     public int executeNode() throws InterruptedException {
         ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.ACTIVE_NODE);
+        script.getPrayer().deactivateAll();
         checkAbsorption();
         if(script.getSkills().getDynamic(Skill.HITPOINTS) > 1){
             if(!checkOverload()){

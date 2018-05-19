@@ -1,8 +1,10 @@
 package ScriptClasses;
 
 import Nodes.CheatCaveNodes.MidDreamNode;
+import ScriptClasses.Util.NoSuitableNodesException;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -18,7 +20,7 @@ public class MarkovNodeExecutor {
         final ExecutableNode u; //source node
         final ExecutableNode v; //destination node
         final int edgeExecutionWeight; //how often do we randomly traverse to this node, higher = more frequent. Relative to edgeExecutionWeights of sibling nodes.
-        //ex: if node A had outgoing edges with weights 2, 3, 5. Then edge with weight 2 will be executed 20% (because 2/(2+3+5)) of the time, 3 -> 30%, and 5 -> 50%.
+        //ex: if node A had outgoing edges with weights 2, 3, 5. Then edge with weight 2 will be executed 20% (because 2/(2+3+5) = 0.20) of the time, 3 -> 30%, and 5 -> 50%.
 
         NodeEdge(ExecutableNode u, ExecutableNode v, int edgeExecutionWeight) {
             this.u = u;
@@ -95,23 +97,38 @@ public class MarkovNodeExecutor {
     /*
     returns the sleeptime until the next onLoop call.
     inside onloop there should be a line such as:
-    return executor.executeNodeThenTraverse();
+    return executor.executeThenTraverse();
     where executor is an instance of this class
 
-    sleep times returns are implemented inside the executeNode() in each ExecutableNode instance
+    sleep times returns are implemented inside the executeNode() method (which returns an int) in each ExecutableNode instance
      */
-    public int executeNodeThenTraverse() throws InterruptedException {
-        int onLoopSleepTime = 0;
+    public int executeThenTraverse() throws InterruptedException, NoSuitableNodesException {
+        int onLoopSleepTime;
         if(current.canExecute()){
             onLoopSleepTime = current.executeNode();
-        }
-        if(current.doConditionalTraverse()) {
-            conditionalTraverse();
-            if(current instanceof MidDreamNode)
-                ((MidDreamNode) current).resumeNode();
+            if(current.doConditionalTraverse()) {
+                conditionalTraverse();
+                if(current instanceof MidDreamNode)
+                    ((MidDreamNode) current).resumeNode();
+            }
+            else
+                normalTraverse();
+
         }
         else{
-            normalTraverse();
+            /*
+            if current canExecute returned false, try to execute all nodes until a nodes canExecute returns true.
+            Throw NoSuitableNodesException if all nodes can not execute.
+            */
+            for(ExecutableNode node: normalAdjMap.keySet()){
+                if(node.canExecute()){
+                    current = node;
+                    return executeThenTraverse();
+                }
+            }
+
+            throw new NoSuitableNodesException("did not find a suitable node that can execute.");
+
         }
         return onLoopSleepTime;
     }
