@@ -17,7 +17,7 @@ import org.osbot.rs07.script.ScriptManifest;
 @SuppressWarnings("unused")
 @ScriptManifest(author = "PayPalMeRSGP", name = MainScript.BUILD_NUM + " " + MainScript.SCRIPT_NAME, info = "NMZ_AFK_ALPHA", version = 0.1, logo = "")
 public class MainScript extends Script implements MessageListener {
-    public static final String SCRIPT_NAME = "Imperishable Nightmare-Zone";
+    static final String SCRIPT_NAME = "Imperishable Nightmare-Zone";
     static final int BUILD_NUM = 13;
 
     private MarkovNodeExecutor executor;
