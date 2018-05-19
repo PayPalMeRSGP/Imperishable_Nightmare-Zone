@@ -16,9 +16,7 @@ import org.osbot.rs07.utility.ConditionalSleep;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import static ScriptClasses.Util.Statics.DRINK;
-import static ScriptClasses.Util.Statics.FEEL;
-import static ScriptClasses.Util.Statics.GUZZLE;
+import static ScriptClasses.Util.Statics.*;
 
 public class PrepNode implements MarkovNodeExecutor.ExecutableNode{
     private static MarkovNodeExecutor.ExecutableNode singleton = null;
@@ -43,7 +41,7 @@ public class PrepNode implements MarkovNodeExecutor.ExecutableNode{
 
     @Override
     public int executeNode() throws InterruptedException {
-        ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.PREPARING);
+        ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.IN_DREAM_PREP);
         ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.PREP_NODE);
         if(cornerSelf()){
             absorptions();

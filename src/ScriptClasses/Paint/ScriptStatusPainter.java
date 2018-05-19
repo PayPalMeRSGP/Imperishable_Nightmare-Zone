@@ -7,7 +7,7 @@ public class ScriptStatusPainter {
     //for paint status
     private static ScriptStatus currentScriptStatus;
     public enum ScriptStatus {
-        PREPARING, AFKING, OVERLOADING, ABSORPTIONS, GUZZLING_ROCKCAKES, RAPID_HEAL_FLICK, SPECIAL_ATK
+        OUTSIDE_DREAM_PREP, IN_DREAM_PREP, AFKING, OVERLOADING, ABSORPTIONS, GUZZLING_ROCKCAKES, RAPID_HEAL_FLICK, SPECIAL_ATK
     }
 
     public static void setCurrentScriptStatus(ScriptStatus currentScriptStatus) {
@@ -23,7 +23,7 @@ public class ScriptStatusPainter {
     private static MarkovStatus currentMarkovStatus;
     private static int onLoopsB4Switch;
     public enum MarkovStatus {
-        ACTIVE_NODE, AFK_NODE, PREP_NODE
+        ACTIVE_NODE, AFK_NODE, PREP_NODE, DREAM_ENTRY_NODE
     }
 
     public static int getOnLoopsB4Switch() {
