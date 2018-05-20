@@ -3,10 +3,14 @@ package Nodes.CheatCaveNodes;
 import ScriptClasses.MarkovNodeExecutor;
 import ScriptClasses.Paint.ScriptStatusPainter;
 import ScriptClasses.Util.Statics;
-import org.osbot.rs07.api.*;
+import org.osbot.rs07.api.Inventory;
+import org.osbot.rs07.api.Prayer;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.RS2Object;
-import org.osbot.rs07.api.ui.*;
+import org.osbot.rs07.api.ui.PrayerButton;
+import org.osbot.rs07.api.ui.RS2Widget;
+import org.osbot.rs07.api.ui.Skill;
+import org.osbot.rs07.api.ui.Tab;
 import org.osbot.rs07.event.WalkingEvent;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
@@ -21,8 +25,6 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
     private int absorptionMinLimit; //determines when to re-pot absorptions
     //private int potionMinBoost; //if using super ranging/mage, determines when to re-pot
 
-    //flags to do certain actions
-    private boolean playerDied;
     boolean noPrayer;
     boolean doOverload;
     boolean powerSurgeActive;
@@ -71,18 +73,8 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
     void checkAbsorption() throws InterruptedException {
         Inventory inv = script.getInventory();
         int absorptionLvl = getAbsorptionLvl();
-        if(absorptionLvl < 0){
-            RS2Widget absorptionWidget = script.getWidgets().get(202, 1, 9);
-            if(absorptionWidget != null){
-                boolean absorptionsVisible = absorptionWidget.isVisible();
-                if(!absorptionsVisible && playerDied){
-                    script.log("absorptions widget is invisible, likely outside dream, stopping");
-                    script.stop(false);
-                }
-            }
-        }
-        //absorptionLvl >= 0 is because getAbsorptionLvl returns -1 in error cases, such as the widget not being visible.
-        if(absorptionLvl < absorptionMinLimit && absorptionLvl >= -1){
+        script.log("absorptions: " + absorptionLvl);
+        if(absorptionLvl < absorptionMinLimit){
             ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.ABSORPTIONS);
             script.getTabs().open(Tab.INVENTORY);
             while(absorptionLvl < absorptionMinLimit && doesPlayerHaveAbsorptionsLeft()){
@@ -240,10 +232,6 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
         }
 
         return -1; //-1 indicates error
-    }
-
-    public void setPlayerDied(boolean playerDied) {
-        this.playerDied = playerDied;
     }
 
     public void setDoOverload(boolean doOverload) {

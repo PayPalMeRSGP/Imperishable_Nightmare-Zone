@@ -1,6 +1,7 @@
 package Nodes.NotInCheatCaves;
 
 import ScriptClasses.MarkovNodeExecutor;
+import ScriptClasses.Paint.ScriptStatusPainter;
 import ScriptClasses.Util.Statics;
 import ScriptClasses.Util.SupplierWithCE;
 import org.osbot.rs07.api.Dialogues;
@@ -16,8 +17,6 @@ import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
 
@@ -48,13 +47,15 @@ public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
 
     @Override
     public int executeNode() throws InterruptedException {
+        ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.OUTSIDE_DREAM_PREP);
+        ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.DREAM_ENTRY_NODE);
         Inventory inv = script.getInventory();
         if (inv.contains(Statics.LOCATOR_ORB_ID) ^ inv.contains(Statics.ROCK_CAKE_ID)) {
             if (inv.getAmount(Statics.OVERLOAD_POTION_4_ID) == numOverloads &&
                     inv.getAmount(Statics.ABSORPTION_POTION_4_ID) == numAbsorptions) {
-                if(hasEnoughGP()){
-                    if(dominicInteraction()){
-                        if(enterDream()){
+                if(executeStep(this::hasEnoughGP)){
+                    if(executeStep(this::dominicInteraction)){
+                        if(executeStep(this::enterDream)){
                             Statics.longRandomPause();
                             return 3000;
                         } else return stop("Script Error: error with entering dream interactions");
@@ -83,7 +84,7 @@ public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
         } else return stop("Stopping: Inventory does not contain a locator orb or rock cake! (Or it has both)");
     }
 
-    //methods can return false, allow up to 5 times to execute properly.
+    //interaction methods (below methods) can return false due to random errors, allow up to 5 times to execute properly.
     private boolean executeStep(SupplierWithCE<Boolean, InterruptedException> f) throws InterruptedException{
         boolean result = f.get();
         int attempts = 0;

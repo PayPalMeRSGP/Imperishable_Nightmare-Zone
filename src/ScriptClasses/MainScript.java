@@ -10,15 +10,14 @@ import ScriptClasses.Util.NoSuitableNodesException;
 import ScriptClasses.Util.Statics;
 import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.listener.MessageListener;
-import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
 @SuppressWarnings("unused")
 @ScriptManifest(author = "PayPalMeRSGP", name = MainScript.BUILD_NUM + " " + MainScript.SCRIPT_NAME, info = "NMZ_AFK_ALPHA", version = 0.1, logo = "")
 public class MainScript extends Script implements MessageListener {
-    public static final String SCRIPT_NAME = "Imperishable Nightmare-Zone";
-    static final int BUILD_NUM = 12;
+    static final String SCRIPT_NAME = "Imperishable Nightmare-Zone";
+    static final int BUILD_NUM = 13;
 
     private MarkovNodeExecutor executor;
     private DraggablePaintHandler paintHandler;
@@ -53,7 +52,7 @@ public class MainScript extends Script implements MessageListener {
     private void markovChainSetup(){
         Statics.setStaticScriptRef(this);
 
-        DreamEntryNode entryNode = (DreamEntryNode) DreamEntryNode.getSingleton(this, 14, 13);
+        DreamEntryNode entryNode = (DreamEntryNode) DreamEntryNode.getSingleton(this, 21, 6);
         PrepNode prepNode = (PrepNode) PrepNode.getSingleton(this);
         AFKNode afkNode = (AFKNode) AFKNode.getSingleton(this);
         ActiveNode activeNode = (ActiveNode) ActiveNode.getSingleton(this);
@@ -77,21 +76,11 @@ public class MainScript extends Script implements MessageListener {
                 activeNode.setDoOverload(true);
                 this.log("doOverload -> true");
             }
-            else if(message.getMessage().contains(Statics.DREAM_OVER_MSG)){
-                log("died in NMZ, stopping script");
-                AFKNode afkNode = (AFKNode) AFKNode.getSingleton(this);
-                ActiveNode activeNode = (ActiveNode) ActiveNode.getSingleton(this);
-                afkNode.setPlayerDied(true);
-                activeNode.setPlayerDied(true);
-                MethodProvider.sleep(5000);
-                stop(false);
-            }
             else if(message.getMessage().contains("Power surge")){
                 log("power surge up");
             }
             else if(message.getMessage().contains("You can only drink this potion")){
                 log("outside NMZ");
-                stop(false);
             }
         }
     }
