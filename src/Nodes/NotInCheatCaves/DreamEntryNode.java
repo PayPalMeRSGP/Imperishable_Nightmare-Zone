@@ -231,6 +231,9 @@ public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
                             return script.getInventory().getAmount(Statics.OVERLOAD_POTION_4_ID) == numOverloads;
                         }
                     }
+                    else{
+                        stop("Ran out of overload doses in storage, Ignore next message about script error");
+                    }
                 }
             }
         }
@@ -259,6 +262,9 @@ public class DreamEntryNode implements MarkovNodeExecutor.ExecutableNode{
                             MethodProvider.sleep(1000);
                             return script.getInventory().getAmount(Statics.ABSORPTION_POTION_4_ID) == numAbsorptions;
                         }
+                    }
+                    else{
+                        stop("Ran out of absorption doses in storage, Ignore next message about script error");
                     }
                 }
             }

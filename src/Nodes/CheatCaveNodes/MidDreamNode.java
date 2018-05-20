@@ -73,7 +73,6 @@ public abstract class MidDreamNode implements MarkovNodeExecutor.ExecutableNode 
     void checkAbsorption() throws InterruptedException {
         Inventory inv = script.getInventory();
         int absorptionLvl = getAbsorptionLvl();
-        script.log("absorptions: " + absorptionLvl);
         if(absorptionLvl < absorptionMinLimit){
             ScriptStatusPainter.setCurrentScriptStatus(ScriptStatusPainter.ScriptStatus.ABSORPTIONS);
             script.getTabs().open(Tab.INVENTORY);
