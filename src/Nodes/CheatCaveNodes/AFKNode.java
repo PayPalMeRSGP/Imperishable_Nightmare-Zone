@@ -3,7 +3,7 @@ package Nodes.CheatCaveNodes;
 import ScriptClasses.MarkovNodeExecutor;
 import ScriptClasses.Paint.ScriptStatusPainter;
 import ScriptClasses.Util.Statics;
-import org.osbot.rs07.api.ui.*;
+import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
@@ -42,7 +42,7 @@ public class AFKNode extends MidDreamNode {
     @Override
     public int executeNode() throws InterruptedException {
         ScriptStatusPainter.setCurrentMarkovStatus(ScriptStatusPainter.MarkovStatus.AFK_NODE);
-
+        checkAbsorption();
         if(script.getSkills().getDynamic(Skill.HITPOINTS) > hpMaxLimit){
             checkOverload();
             decreaseHP();
