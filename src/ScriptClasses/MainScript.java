@@ -8,6 +8,8 @@ import ScriptClasses.Paint.DraggablePaintHandler;
 import ScriptClasses.Paint.Paint;
 import ScriptClasses.Util.NoSuitableNodesException;
 import ScriptClasses.Util.Statics;
+import SwingGUI.GUI;
+import SwingGUI.GUIResults;
 import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.listener.MessageListener;
 import org.osbot.rs07.script.Script;
@@ -22,6 +24,7 @@ public class MainScript extends Script implements MessageListener {
     private MarkovNodeExecutor executor;
     private DraggablePaintHandler paintHandler;
     private Paint paint;
+    private GUIResults results;
 
     @Override
     public void onStart() throws InterruptedException {
@@ -52,22 +55,44 @@ public class MainScript extends Script implements MessageListener {
     private void markovChainSetup(){
         Statics.setStaticScriptRef(this);
 
-        DreamEntryNode entryNode = (DreamEntryNode) DreamEntryNode.getSingleton(this, 21, 6);
-        PrepNode prepNode = (PrepNode) PrepNode.getSingleton(this);
-        AFKNode afkNode = (AFKNode) AFKNode.getSingleton(this);
-        ActiveNode activeNode = (ActiveNode) ActiveNode.getSingleton(this);
+        if(results.isSet()){
+            log(results.toJSON());
+            if(results.isPrayerDream()){
+                log("TODO: prayer dream");
+                stop(false);
+            }
+            else{
+                DreamEntryNode entryNode = (DreamEntryNode) DreamEntryNode.getSingleton(this, results.getNumAbsorptions(), results.getNumOverloads());
+                PrepNode prepNode = (PrepNode) PrepNode.getSingleton(this);
+                AFKNode afkNode = (AFKNode) AFKNode.getSingleton(this);
+                ActiveNode activeNode = (ActiveNode) ActiveNode.getSingleton(this);
 
-        executor = new MarkovNodeExecutor(entryNode);
-        executor.addNormalEdgeToNode(entryNode, prepNode, 1);
-        executor.addNormalEdgeToNode(prepNode, activeNode, 1);
-        executor.addNormalEdgeToNode(activeNode, activeNode, 1);
-        executor.addNormalEdgeToNode(afkNode, afkNode, 1);
-        executor.addCondEdgeToNode(activeNode, afkNode, 1);
-        executor.addCondEdgeToNode(afkNode, activeNode, 1);
+                executor = new MarkovNodeExecutor(entryNode);
+                executor.addNormalEdgeToNode(entryNode, prepNode, 1);
+                executor.addNormalEdgeToNode(prepNode, activeNode, 1);
+                executor.addNormalEdgeToNode(activeNode, activeNode, 1);
+                executor.addNormalEdgeToNode(afkNode, afkNode, 1);
+                executor.addCondEdgeToNode(activeNode, afkNode, 1);
+                executor.addCondEdgeToNode(afkNode, activeNode, 1);
+
+            }
+        }
+
+
     }
 
     private void openGUI(){
+        GUI gui = new GUI(this);
+        try{
+            while(gui.isGuiActive()){
+                sleep(500);
+            }
+        }
+        catch (InterruptedException e){
+            log(e.toString());
+        }
 
+        results = gui.getResults();
     }
 
     @Override

@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="SwingGUI.GUI">
+  <grid id="27dc6" binding="panel" layout-manager="GridBagLayout">
+    <constraints>
+      <xy x="20" y="20" width="883" height="367"/>
+    </constraints>
+    <properties>
+      <enabled value="true"/>
+    </properties>
+    <border type="none" title="Imperishable_NMZ" title-justification="2" title-position="3">
+      <font/>
+      <title-color color="-4473925"/>
+    </border>
+    <children>
+      <component id="722fb" class="javax.swing.JLabel" binding="overloadLabel">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+        <properties>
+          <text value="Overload #"/>
+          <verticalAlignment value="0"/>
+        </properties>
+      </component>
+      <vspacer id="c93e3">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="3" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+      </vspacer>
+      <component id="a76f3" class="javax.swing.JLabel" binding="absorptionLabel">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+        <properties>
+          <text value="Absorption #"/>
+        </properties>
+      </component>
+      <component id="7a6c1" class="javax.swing.JSpinner" binding="absorptionCountSpinner" custom-create="true">
+        <constraints>
+          <grid row="2" column="5" row-span="1" col-span="6" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="150" height="-1"/>
+          </grid>
+          <gridbag weightx="3.0" weighty="0.0"/>
+        </constraints>
+        <properties>
+          <toolTipText value="enter #"/>
+        </properties>
+      </component>
+      <component id="a872d" class="javax.swing.JLabel" binding="activeLabel">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+        <properties>
+          <text value="Active"/>
+        </properties>
+      </component>
+      <component id="f14e1" class="javax.swing.JSlider" binding="activeSlider">
+        <constraints>
+          <grid row="3" column="5" row-span="1" col-span="13" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="5.0" weighty="0.0"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="ef7f6" class="javax.swing.JSlider" binding="passiveSlider">
+        <constraints>
+          <grid row="4" column="5" row-span="1" col-span="13" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="5.0" weighty="0.0"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="276fe" class="javax.swing.JLabel" binding="passiveLabel">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+        <properties>
+          <text value="Passive "/>
+        </properties>
+      </component>
+      <component id="c3dc7" class="javax.swing.JLabel" binding="activePercentLabel">
+        <constraints>
+          <grid row="3" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+        <properties>
+          <text value="50%"/>
+        </properties>
+      </component>
+      <component id="491a" class="javax.swing.JLabel" binding="passivePercentLabel">
+        <constraints>
+          <grid row="4" column="3" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+        <properties>
+          <text value="50%"/>
+        </properties>
+      </component>
+      <component id="b5e06" class="javax.swing.JSpinner" binding="overloadCountSpinner" custom-create="true">
+        <constraints>
+          <grid row="0" column="5" row-span="1" col-span="6" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="150" height="-1"/>
+          </grid>
+          <gridbag weightx="3.0" weighty="0.0"/>
+        </constraints>
+        <properties>
+          <toolTipText value="enter #"/>
+        </properties>
+      </component>
+      <component id="88287" class="javax.swing.JLabel" binding="specWeaponLabel">
+        <constraints>
+          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+        <properties>
+          <text value="Spec Weapon"/>
+        </properties>
+      </component>
+      <component id="ff9c0" class="javax.swing.JComboBox" binding="specialWeaponDropDown">
+        <constraints>
+          <grid row="5" column="5" row-span="1" col-span="13" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+        <properties>
+          <toolTipText value="select special weapon"/>
+        </properties>
+      </component>
+      <component id="366fb" class="javax.swing.JTextArea" binding="firstDreamText" default-binding="true">
+        <constraints>
+          <grid row="6" column="0" row-span="1" col-span="18" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <preferred-size width="150" height="50"/>
+          </grid>
+          <gridbag weightx="0.0" weighty="5.0"/>
+        </constraints>
+        <properties>
+          <editable value="false"/>
+          <enabled value="true"/>
+          <lineWrap value="true"/>
+          <rows value="4"/>
+          <text value="A first time dream means you have no NMZ points and need to start a dream with prayer potions"/>
+          <wrapStyleWord value="true"/>
+        </properties>
+      </component>
+      <component id="2221f" class="javax.swing.JLabel" binding="firstDreamLabel">
+        <constraints>
+          <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+        <properties>
+          <text value="First Time Dream? "/>
+        </properties>
+      </component>
+      <component id="5eb46" class="javax.swing.JCheckBox" binding="firstDreamBox">
+        <constraints>
+          <grid row="7" column="8" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+        <properties>
+          <text value=""/>
+        </properties>
+      </component>
+      <component id="958d6" class="javax.swing.JTextArea" binding="potionLimitText" default-binding="true">
+        <constraints>
+          <grid row="0" column="17" row-span="3" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <preferred-size width="150" height="50"/>
+          </grid>
+          <gridbag weightx="10.0" weighty="0.0"/>
+        </constraints>
+        <properties>
+          <text value="Overloads + Absorptions &lt;= 27!"/>
+        </properties>
+      </component>
+      <component id="fe5a7" class="javax.swing.JButton" binding="loadButton">
+        <constraints>
+          <grid row="8" column="5" row-span="1" col-span="5" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+        <properties>
+          <text value="Load"/>
+        </properties>
+      </component>
+      <hspacer id="13b55">
+        <constraints>
+          <grid row="8" column="10" row-span="1" col-span="6" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+      </hspacer>
+      <component id="c5ae8" class="javax.swing.JButton" binding="confirmButton" default-binding="true">
+        <constraints>
+          <grid row="8" column="16" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+        <properties>
+          <text value="Confirm"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>

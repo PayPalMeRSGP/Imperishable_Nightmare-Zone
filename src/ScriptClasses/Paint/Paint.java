@@ -6,6 +6,7 @@ import org.osbot.rs07.script.Script;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 public class Paint implements Painter{
@@ -15,7 +16,13 @@ public class Paint implements Painter{
     private BufferedImage overloadIcon;
     private BufferedImage rapidHealIcon;
 
-    private static final Color TRANS_GRAY = new Color(156,156,156, 127);
+    //colors from runelite
+    private static final Color BG_COLOR = new Color(70, 61, 50, 156);
+    private static final Color BG_OUTSIDE_STROKE = new Color(56, 48, 35, 255);
+    private static final Color BG_INSIDE_STROKE = new Color(90, 82, 69, 255);
+
+    private static Font OSRS_FONT;
+
     private static final String IMG_FOLDER = "resources";
 
     @SuppressWarnings("deprecation")
@@ -24,11 +31,16 @@ public class Paint implements Painter{
         paintHandler = new DraggablePaintHandler();
 
         try{
-            overloadIcon = ImageIO.read(script.getScriptResourceAsStream("resources/overload.png"));
-            rapidHealIcon = ImageIO.read(script.getScriptResourceAsStream("resources/rapid_heal.png"));
+            overloadIcon = ImageIO.read(script.getScriptResourceAsStream(IMG_FOLDER + "/overload.png"));
+            rapidHealIcon = ImageIO.read(script.getScriptResourceAsStream(IMG_FOLDER + "/rapid_heal.png"));
+            OSRS_FONT = Font.createFont(Font.PLAIN, new FileInputStream(IMG_FOLDER + "/runescape.ttf"));
         }
         catch(IOException e){
             script.log(e);
+        }
+        catch (FontFormatException e) {
+            script.log(e);
+            OSRS_FONT = Font.getFont(Font.SERIF);
         }
 
         tracker = new CombatXPTracker();
@@ -43,7 +55,7 @@ public class Paint implements Painter{
     @Override
     public void onPaint(Graphics2D g) {
         Rectangle paintArea = paintHandler.getXpPaint();
-        g.setColor(TRANS_GRAY);
+        g.setColor(BG_COLOR);
         g.fillRect(paintArea.x, paintArea.y, paintArea.width, paintArea.height);
 
         if(tracker != null && tracker.getLastStyle() != null){
@@ -115,7 +127,7 @@ public class Paint implements Painter{
     }
 
     private void paintOverloadTimer(Graphics2D g){
-        g.setColor(TRANS_GRAY);
+        g.setColor(BG_COLOR);
         Rectangle paintArea = paintHandler.getOverloadPaint();
         g.fillRect(paintArea.x, paintArea.y, paintArea.width, paintArea.height);
         if(overloadIcon != null){
@@ -126,7 +138,7 @@ public class Paint implements Painter{
     }
 
     private void paintRapidHealTimer(Graphics2D g){
-        g.setColor(TRANS_GRAY);
+        g.setColor(BG_COLOR);
         Rectangle paintArea = paintHandler.getPrayerFlickPaint();
         g.fillRect(paintArea.x, paintArea.y, paintArea.width, paintArea.height);
         if(rapidHealIcon != null){
@@ -137,7 +149,7 @@ public class Paint implements Painter{
     }
 
     private void paintReset(Graphics2D g){
-        g.setColor(TRANS_GRAY);
+        g.setColor(BG_COLOR);
         Rectangle resetArea = paintHandler.getResetPaint();
         g.fillRect(resetArea.x, resetArea.y, resetArea.width, resetArea.height);
         g.setColor(Color.WHITE);
